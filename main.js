@@ -134,6 +134,41 @@
     });
   }
 
+  /* ---------- Aura (WebGL field) ---------- */
+  // gold, teal and a cool indigo keep the field luminous on the ink ground; brick only as a trace
+  const PALETTES = {
+    dark: [
+      ['#F2B544', '#6FB9A8', '#6C7CE0'], // start
+      ['#6FB9A8', '#F2B544', '#6C7CE0'], // about
+      ['#F2B544', '#D2664C', '#6C7CE0'], // work
+      ['#6C7CE0', '#F2B544', '#6FB9A8'], // route
+      ['#6FB9A8', '#6C7CE0', '#F2B544'], // toolkit
+      ['#F2B544', '#6FB9A8', '#D2664C'], // contact
+    ],
+    light: [
+      ['#E2A93A', '#5FAA93', '#8A97E8'],
+      ['#5FAA93', '#E2A93A', '#8A97E8'],
+      ['#E2A93A', '#D0785E', '#8A97E8'],
+      ['#8A97E8', '#E2A93A', '#5FAA93'],
+      ['#5FAA93', '#8A97E8', '#E2A93A'],
+      ['#E2A93A', '#5FAA93', '#D0785E'],
+    ],
+  };
+  const auraCanvas = $('#aura');
+  const auraBase = () => (currentTheme() === 'light' ? 0.42 : 0.58);
+  let auraSection = 0;
+  const aura = auraCanvas && window.createAura ? window.createAura(auraCanvas, { intensity: auraBase(), light: 0.55, colors: PALETTES[currentTheme()][0], scale: window.innerWidth < 760 ? 0.4 : 0.5 }) : null;
+  if (aura) {
+    if (reduced) { aura.renderOnce(9); auraCanvas.classList.add('is-on'); }
+    else {
+      aura.start();
+      requestAnimationFrame(() => auraCanvas.classList.add('is-on'));
+      window.addEventListener('mousemove', (e) => aura.pointer(e.clientX / window.innerWidth, e.clientY / window.innerHeight), { passive: true });
+      document.addEventListener('visibilitychange', () => { if (document.hidden) aura.stop(); else aura.start(); });
+    }
+    onThemeChange.push(() => { aura.set({ colors: PALETTES[currentTheme()][auraSection], intensity: auraBase() }); if (reduced) aura.renderOnce(9); });
+  }
+
   /* ---------- Hero: split text + intro ---------- */
   $$('.split').forEach((el) => {
     const text = el.textContent;
@@ -147,22 +182,29 @@
   });
 
   const portrait = $('.hero__portrait');
-  if (hasGsap && !reduced) {
+  let heroIntroStarted = false;
+  function startHeroIntro() {
+    if (heroIntroStarted) return;
+    heroIntroStarted = true;
+    if (!(hasGsap && !reduced)) { $('.hero__canvas').style.opacity = reduced ? 0.55 : 1; return; }
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    tl.from('.hud', { y: -16, autoAlpha: 0, duration: 0.8 }, 0.1)
-      .from('.split .char', { yPercent: 115, rotate: 4, duration: 1.1, stagger: 0.032 }, 0.15)
-      .from('[data-intro]', { y: 22, autoAlpha: 0, duration: 0.9, stagger: 0.09 }, 0.55)
+    tl.fromTo('.hud', { y: -16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.8 }, 0.1)
+      .to('.split .char', { yPercent: 0, rotate: 0, duration: 1.1, stagger: 0.032 }, 0.15)
+      .fromTo('[data-intro]', { y: 22, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.9, stagger: 0.09 }, 0.55)
       .fromTo(portrait, { y: 48, rotation: 10, autoAlpha: 0 }, { y: 0, rotation: 3, autoAlpha: 1, duration: 1.3 }, 0.6)
       .to('.hero__canvas', { opacity: 1, duration: 1.6 }, 0.5)
-      .from('.rail', { x: -18, autoAlpha: 0, duration: 0.8 }, 0.9)
-      .from('.hero__scroll', { autoAlpha: 0, duration: 0.8 }, 1.3);
-
+      .fromTo('.rail', { x: -18, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.8 }, 0.9)
+      .fromTo('.hero__scroll', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.8 }, 1.3);
+  }
+  if (hasGsap && !reduced) {
+    // park the hero's intro targets until the welcome hands over (or right away when there is no welcome)
+    gsap.set(['[data-intro]', portrait, '.rail', '.hero__scroll', '.hud'], { autoAlpha: 0 });
+    gsap.set('.split .char', { yPercent: 115, rotate: 4 });
     // gentle parallax while the hero scrolls away
     gsap.to(portrait, { y: -70, rotation: 5, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
     gsap.to('.hero__inner', { y: 60, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
-  } else {
-    $('.hero__canvas').style.opacity = reduced ? 0.55 : 1;
   }
+  if (!root.classList.contains('welcome-pending')) startHeroIntro();
 
   /* ---------- Hero canvas: live pathfinding ---------- */
   function createPathfinder(canvas, host) {
@@ -500,6 +542,7 @@
     });
     const label = stops[active].querySelector('span').textContent;
     if (hudSection.textContent !== label) hudSection.textContent = label;
+    if (aura && active !== auraSection) { auraSection = active; aura.set({ colors: PALETTES[currentTheme()][active] || PALETTES[currentTheme()][0] }); }
     // hide HUD on scroll down, show on scroll up
     if (!reduced) {
       if (y > lastY + 4 && y > 240) hud.style.transform = 'translateY(-100%)';
@@ -718,4 +761,124 @@
   window.addEventListener('resize', () => { clearTimeout(planRt); planRt = setTimeout(drawPlanRoute, 200); });
   window.addEventListener('load', drawPlanRoute);
   drawPlanRoute();
+
+  /* ---------- InkFlow signatures (header mark + sign-off seal) ---------- */
+  // Inject an InkFlow export and boot its embedded runtime (scripts inserted via innerHTML are inert).
+  async function loadInkflowSvg(host) {
+    if (!host) return null;
+    let svg = host.querySelector('svg');
+    if (!svg && host.dataset.src) {
+      const res = await fetch(host.dataset.src);
+      if (!res.ok) throw new Error(`missing ${host.dataset.src}`);
+      host.innerHTML = await res.text();
+      svg = host.querySelector('svg');
+    }
+    if (svg && !svg.inkflow) {
+      const inert = svg.querySelector('script');
+      if (inert) { const s = document.createElement('script'); s.textContent = inert.textContent; inert.remove(); host.appendChild(s); }
+    }
+    return svg;
+  }
+
+  const hudSig = $('#hudSig');
+  loadInkflowSvg(hudSig).then(() => { if (!root.classList.contains('welcome-pending')) hudSig.classList.add('is-on'); }).catch(() => { hudSig.textContent = 'Muhammad Ahsan'; hudSig.classList.add('is-on'); });
+
+  // the sign-off writes itself as you arrive: the main mark first, the alias in the last stretch
+  const seal = $('#seal'), aliasEl = $('#alias');
+  Promise.all([loadInkflowSvg(seal).catch(() => null), loadInkflowSvg(aliasEl).catch(() => null)]).then(([sealSvg, aliasSvg]) => {
+    const a1 = sealSvg && sealSvg.inkflow, a2 = aliasSvg && aliasSvg.inkflow;
+    if (!a1 && seal) seal.remove();
+    if (!a2 && aliasEl) aliasEl.remove();
+    if (!a1 && !a2) return;
+    if (!hasGsap || reduced) { if (a1) a1.seek(a1.getDuration()); if (a2) a2.seek(a2.getDuration()); return; }
+    if (a1) { a1.pause(); a1.seek(0); }
+    if (a2) { a2.pause(); a2.seek(0); }
+    ScrollTrigger.create({
+      trigger: '#signoff', start: 'top 85%', end: 'bottom bottom', scrub: 0.5,
+      onUpdate: (st) => {
+        const p = st.progress;
+        if (a1) a1.seek(clamp(p / 0.72, 0, 1) * a1.getDuration());
+        if (a2) a2.seek(clamp((p - 0.62) / 0.38, 0, 1) * a2.getDuration());
+      },
+    });
+  });
+
+  /* ---------- Media tiles: intro video, voice note, CV ---------- */
+  const assetExists = async (url) => {
+    try { const r = await fetch(url, { method: 'HEAD' }); return r.ok; } catch (e) { return false; }
+  };
+
+  const videoTile = $('#videoTile'), videoPlay = $('#videoPlay'), lightbox = $('#lightbox'), introVideo = $('#introVideo');
+  if (videoTile) {
+    let videoOk = false;
+    assetExists(videoTile.dataset.src).then((ok) => { videoOk = ok; videoTile.classList.toggle('is-soon', !ok); });
+    const openVideo = () => {
+      if (!videoOk) { toast('Intro video is on its way'); return; }
+      if (!introVideo.src) introVideo.src = videoTile.dataset.src;
+      lightbox.hidden = false;
+      if (lenis) lenis.stop();
+      introVideo.play().catch(() => {});
+      $('#lightboxClose').focus();
+    };
+    const closeVideo = () => { introVideo.pause(); lightbox.hidden = true; if (lenis) lenis.start(); videoPlay.focus(); };
+    videoPlay.addEventListener('click', openVideo);
+    videoTile.addEventListener('click', (e) => { if (!e.target.closest('button')) openVideo(); });
+    $('#lightboxClose').addEventListener('click', closeVideo);
+    lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeVideo(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !lightbox.hidden) closeVideo(); });
+  }
+
+  const voiceTile = $('#voiceTile'), voicePlay = $('#voicePlay'), voiceAudio = $('#voiceAudio'), voiceWave = $('#voiceWave'), voiceTime = $('#voiceTime');
+  if (voiceTile) {
+    const BARS = 44;
+    const bars = [];
+    for (let i = 0; i < BARS; i++) {
+      const b = document.createElement('i');
+      // a resting waveform that looks spoken, not random
+      const h = 14 + 44 * Math.abs(Math.sin(i * 0.55) * Math.sin(i * 0.19 + 1.2)) + (i % 5 === 0 ? 10 : 0);
+      b.style.height = `${Math.round(h)}%`;
+      b.dataset.rest = b.style.height;
+      voiceWave.appendChild(b); bars.push(b);
+    }
+    let voiceOk = false, ctx = null, analyser = null, data = null, rafId = 0;
+    assetExists(voiceTile.dataset.src).then((ok) => { voiceOk = ok; voiceTile.classList.toggle('is-soon', !ok); });
+    const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+    const animate = () => {
+      if (voiceAudio.paused) return;
+      if (analyser) {
+        analyser.getByteFrequencyData(data);
+        bars.forEach((b, i) => { const v = data[Math.floor((i / BARS) * data.length * 0.6)] / 255; b.style.height = `${12 + v * 88}%`; });
+      } else {
+        const t = performance.now() / 1000;
+        bars.forEach((b, i) => { b.style.height = `${18 + 60 * Math.abs(Math.sin(t * 6 + i * 0.7) * Math.sin(t * 2.3 + i * 0.3))}%`; });
+      }
+      voiceTime.textContent = `${fmtTime(voiceAudio.currentTime)} / ${fmtTime(voiceAudio.duration || 0)}`;
+      rafId = requestAnimationFrame(animate);
+    };
+    const rest = () => { cancelAnimationFrame(rafId); bars.forEach((b) => { b.style.height = b.dataset.rest; }); };
+    voicePlay.addEventListener('click', async () => {
+      if (!voiceOk) { toast('Voice note is being recorded'); return; }
+      if (!voiceAudio.src) voiceAudio.src = voiceTile.dataset.src;
+      if (voiceAudio.paused) {
+        try {
+          if (!ctx && window.AudioContext) { ctx = new AudioContext(); const src = ctx.createMediaElementSource(voiceAudio); analyser = ctx.createAnalyser(); analyser.fftSize = 128; data = new Uint8Array(analyser.frequencyBinCount); src.connect(analyser); analyser.connect(ctx.destination); }
+          if (ctx && ctx.state === 'suspended') await ctx.resume();
+        } catch (e) { analyser = null; }
+        await voiceAudio.play().catch(() => toast('Could not play the voice note'));
+        voiceTile.classList.add('is-playing'); animate();
+      } else { voiceAudio.pause(); }
+    });
+    voiceAudio.addEventListener('pause', () => { voiceTile.classList.remove('is-playing'); rest(); });
+    voiceAudio.addEventListener('ended', () => { voiceTile.classList.remove('is-playing'); rest(); voiceTime.textContent = fmtTime(voiceAudio.duration || 0); });
+  }
+
+  const cvTile = $('#cvTile');
+  if (cvTile) {
+    let cvOk = false;
+    assetExists(cvTile.getAttribute('href')).then((ok) => { cvOk = ok; cvTile.classList.toggle('is-soon', !ok); });
+    cvTile.addEventListener('click', (e) => { if (!cvOk) { e.preventDefault(); toast('CV is being updated'); } });
+  }
+
+  /* ---------- shared handles for intro.js ---------- */
+  window.site = { aura, auraBase, lenis, startHeroIntro, loadInkflowSvg, toast, reduced, hudSig, sectionPalette: () => PALETTES[currentTheme()][auraSection] };
 })();
