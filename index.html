@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Muhammad Ahsan</title>
+  <meta name="description" content="Muhammad Ahsan is a full-stack developer and computer science student in Islamabad who builds practical software for real businesses and teaches what he learns.">
+  <meta property="og:title" content="Muhammad Ahsan">
+  <meta property="og:description" content="Full-stack developer and CS student in Islamabad. Practical software for real businesses.">
+  <meta property="og:image" content="assets/portrait.jpg">
+  <meta name="theme-color" content="#0B1116">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B1116'/%3E%3Cpath d='M16 6a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z' fill='%23F2B544'/%3E%3Ccircle cx='16' cy='13' r='2.6' fill='%230B1116'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@1&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#about">Skip to content</a>
+
+  <div class="cursor" aria-hidden="true">
+    <div class="cursor__dot"></div>
+    <div class="cursor__ring"><span class="cursor__label">Open</span></div>
+  </div>
+
+  <!-- ============ HUD ============ -->
+  <header class="hud">
+    <a class="hud__brand" href="#top" aria-label="Back to top">
+      <svg class="hud__pin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z" fill="currentColor"/><circle cx="12" cy="9" r="2.6" class="hud__pin-hole"/></svg>
+      <span>Muhammad Ahsan</span>
+    </a>
+    <div class="hud__center">
+      <span class="hud__section" id="hudSection">Start</span>
+    </div>
+    <div class="hud__right">
+      <span class="hud__status"><span class="pulse" aria-hidden="true"></span>Open to work</span>
+      <span class="hud__time" id="localTime" title="Local time in Islamabad">--:--</span>
+      <button class="hud__theme" id="themeToggle" type="button" aria-label="Switch theme">
+        <svg class="icon icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ ROUTE RAIL (desktop nav) ============ -->
+  <nav class="rail" aria-label="Sections">
+    <div class="rail__track">
+      <div class="rail__fill" id="railFill"></div>
+      <div class="rail__you" id="railYou"><span></span></div>
+    </div>
+    <ol class="rail__stops" id="railStops">
+      <li><a href="#top" data-stop><i></i><span>Start</span></a></li>
+      <li><a href="#about" data-stop><i></i><span>About</span></a></li>
+      <li><a href="#work" data-stop><i></i><span>Work</span></a></li>
+      <li><a href="#route" data-stop><i></i><span>Route</span></a></li>
+      <li><a href="#toolkit" data-stop><i></i><span>Toolkit</span></a></li>
+      <li><a href="#contact" data-stop><i></i><span>Contact</span></a></li>
+    </ol>
+  </nav>
+
+  <main id="top">
+
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="hero">
+      <canvas class="hero__canvas" id="pathCanvas" aria-hidden="true"></canvas>
+      <div class="hero__inner">
+        <p class="eyebrow" data-intro>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <span>Islamabad · Full-stack developer · CS student</span>
+        </p>
+        <h1 class="hero__name" aria-label="Muhammad Ahsan">
+          <span class="hero__line"><span class="split">Muhammad</span></span>
+          <span class="hero__line"><span class="split">Ahsan</span></span>
+        </h1>
+        <p class="hero__lede" data-intro>
+          I build <em>practical</em> software for real businesses, from tax offices to workshop floors, and I teach what I learn along the way.
+        </p>
+        <div class="hero__cta" data-intro>
+          <a class="btn btn--primary" href="#work" data-magnetic>
+            <span>See the work</span>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn btn--ghost" href="#contact" data-magnetic>
+            <span>Get in touch</span>
+          </a>
+        </div>
+        <dl class="hero__meta" data-intro>
+          <div><dt>Studying</dt><dd>BSCS, COMSATS University Islamabad</dd></div>
+          <div><dt>Community</dt><dd>IEEE Computer Society, CUI chapter</dd></div>
+          <div><dt>Coordinates</dt><dd>33.65° N, 73.15° E</dd></div>
+        </dl>
+      </div>
+
+      <figure class="hero__portrait" data-intro-portrait>
+        <div class="hero__portrait-frame">
+          <img src="assets/portrait.jpg" srcset="assets/portrait-sm.jpg 640w, assets/portrait.jpg 1200w" sizes="(max-width: 900px) 60vw, 26vw" alt="Portrait of Muhammad Ahsan at a desk, wearing glasses and a dark blazer" width="1200" height="1499">
+        </div>
+        <figcaption class="tag tag--pin">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          You are here
+        </figcaption>
+      </figure>
+
+      <div class="hero__hint" data-intro>
+        <span>Move your cursor. The route finds you.</span>
+      </div>
+      <a class="hero__scroll" href="#about" aria-label="Scroll to About">
+        <span>Scroll</span>
+        <i></i>
+      </a>
+    </section>
+
+    <!-- ============ MARQUEE ============ -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track" id="marqueeTrack">
+        <span>React 19</span><i></i><span>TypeScript</span><i></i><span>Node.js</span><i></i><span>PostgreSQL</span><i></i><span>Supabase</span><i></i><span>Three.js</span><i></i><span>Tailwind CSS</span><i></i><span>GSAP</span><i></i><span>Progressive web apps</span><i></i><span>Chrome extensions</span><i></i><span>Python</span><i></i><span>Java</span><i></i>
+      </div>
+    </div>
+
+    <!-- ============ ABOUT ============ -->
+    <section class="section about" id="about">
+      <header class="section__head">
+        <p class="step" data-reveal>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h12M12 6l6 6-6 6"/></svg>
+          Stop 1 of 5 · About
+        </p>
+        <h2 data-reveal>From pre-med to <em>production</em> code.</h2>
+      </header>
+
+      <div class="about__grid">
+        <figure class="about__photo" data-reveal-photo>
+          <img src="assets/campus.jpg" srcset="assets/campus-sm.jpg 640w, assets/campus.jpg 1200w" sizes="(max-width: 900px) 90vw, 38vw" alt="Muhammad Ahsan standing on the COMSATS campus lawn in front of a red-brick building" width="1200" height="1600" loading="lazy">
+          <figcaption class="tag">COMSATS University Islamabad</figcaption>
+        </figure>
+
+        <div class="about__text">
+          <p class="lead" data-reveal>I came to computer science after two years of pre-med, which means I still think about software the way a clinic thinks about a patient: what is actually going on, and what is the smallest thing that would fix it.</p>
+          <p data-reveal>Most of what I build is for small businesses that have never had software made for them. Tax agencies, aluminium fabricators, private schools, consultancies. Offline-first, PKR-native, WhatsApp-friendly, and boring in all the right places.</p>
+          <p data-reveal>On campus I help run the IEEE Computer Society chapter, where I plan the semester, run hands-on workshops, and try to make the first year less confusing for the people arriving after me.</p>
+
+          <dl class="facts" data-reveal-group>
+            <div><dt>Based in</dt><dd>Islamabad, Pakistan</dd></div>
+            <div><dt>Studying</dt><dd>BSCS, COMSATS University Islamabad</dd></div>
+            <div><dt>Community</dt><dd>Operations Manager, IEEE CS CUI</dd></div>
+            <div><dt>Before this</dt><dd>Pre-medical, Kohat</dd></div>
+          </dl>
+        </div>
+      </div>
+
+      <ul class="stats" data-reveal-group>
+        <li><strong data-count="5" data-suffix="th">0</strong><span>Semester, and counting</span></li>
+        <li><strong data-count="3">0</strong><span>Apps live in production</span></li>
+        <li><strong data-count="2">0</strong><span>Terms on the IEEE CS team</span></li>
+        <li><strong data-count="3">0</strong><span>Workshops taught on campus</span></li>
+      </ul>
+    </section>
+
+    <!-- ============ WORK ============ -->
+    <section class="section work" id="work">
+      <header class="section__head section__head--split">
+        <div>
+          <p class="step" data-reveal>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h12M12 6l6 6-6 6"/></svg>
+            Stop 2 of 5 · Work
+          </p>
+          <h2 data-reveal>Selected <em>work</em>.</h2>
+        </div>
+        <p class="section__note" data-reveal>Six projects. Each one built for a specific person with a specific problem. Scroll to walk through them.</p>
+      </header>
+
+      <div class="stack" id="stack">
+
+        <!-- Placeholder project 1 -->
+        <article class="card" data-art="route">
+          <div class="card__body">
+            <div class="card__top">
+              <span class="card__index">01 / 06</span>
+              <span class="chip chip--cat">Navigation</span>
+            </div>
+            <h3 class="card__title">Atlas</h3>
+            <p class="card__desc">A 3D indoor navigator for a university building. Search a room, get a route, follow the chevrons floor by floor. Works offline once installed.</p>
+            <ul class="card__stack">
+              <li>React</li><li>Three.js</li><li>TypeScript</li><li>PWA</li>
+            </ul>
+            <a class="card__link" href="#" data-hover="Open">
+              <span>View project</span>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </a>
+          </div>
+          <div class="card__art" aria-hidden="true"></div>
+        </article>
+
+        <!-- Placeholder project 2 -->
+        <article class="card" data-art="ledger">
+          <div class="card__body">
+            <div class="card__top">
+              <span class="card__index">02 / 06</span>
+              <span class="chip chip--cat">SaaS</span>
+            </div>
+            <h3 class="card__title">Ledger</h3>
+            <p class="card__desc">Client, case and payment management for small tax agencies. Local-first search, an immutable ledger, and receipts generated in the browser.</p>
+            <ul class="card__stack">
+              <li>React</li><li>Fastify</li><li>PostgreSQL</li><li>IndexedDB</li>
+            </ul>
+            <a class="card__link" href="#" data-hover="Open">
+              <span>View project</span>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </a>
+          </div>
+          <div class="card__art" aria-hidden="true"></div>
+        </article>
+
+        <!-- Placeholder project 3 -->
+        <article class="card" data-art="frame">
+          <div class="card__body">
+            <div class="card__top">
+              <span class="card__index">03 / 06</span>
+              <span class="chip chip--cat">Offline PWA</span>
+            </div>
+            <h3 class="card__title">Frame</h3>
+            <p class="card__desc">Measurement to quotation for aluminium window and door fabricators. Cutting lists, material takeoff, pricing and a PDF the customer gets on WhatsApp.</p>
+            <ul class="card__stack">
+              <li>React</li><li>TypeScript</li><li>Prisma</li><li>Workbox</li>
+            </ul>
+            <a class="card__link" href="#" data-hover="Open">
+              <span>View project</span>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </a>
+          </div>
+          <div class="card__art" aria-hidden="true"></div>
+        </article>
+
+        <!-- Placeholder project 4 -->
+        <article class="card" data-art="nodes">
+          <div class="card__body">
+            <div class="card__top">
+              <span class="card__index">04 / 06</span>
+              <span class="chip chip--cat">Community</span>
+            </div>
+            <h3 class="card__title">Campus</h3>
+            <p class="card__desc">A student resource hub for a university society. Past papers, courses, events, a team portal and an admin panel, all on one backend.</p>
+            <ul class="card__stack">
+              <li>React</li><li>Supabase</li><li>Tailwind</li><li>Framer Motion</li>
+            </ul>
+            <a class="card__link" href="#" data-hover="Open">
+              <span>View project</span>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </a>
+          </div>
+          <div class="card__art" aria-hidden="true"></div>
+        </article>
+
+        <!-- Placeholder project 5 -->
+        <article class="card" data-art="timeline">
+          <div class="card__body">
+            <div class="card__top">
+              <span class="card__index">05 / 06</span>
+              <span class="chip chip--cat">Creative tool</span>
+            </div>
+            <h3 class="card__title">Studio</h3>
+            <p class="card__desc">A browser-based SVG drawing and animation studio. Pressure-sensitive strokes, a real timeline with keyframes, and exports that need no player.</p>
+            <ul class="card__stack">
+              <li>TypeScript</li><li>SVG</li><li>Pointer Events</li><li>PWA</li>
+            </ul>
+            <a class="card__link" href="#" data-hover="Open">
+              <span>View project</span>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </a>
+          </div>
+          <div class="card__art" aria-hidden="true"></div>
+        </article>
+
+        <!-- Placeholder project 6 -->
+        <article class="card" data-art="kanban">
+          <div class="card__body">
+            <div class="card__top">
+              <span class="card__index">06 / 06</span>
+              <span class="chip chip--cat">CRM</span>
+            </div>
+            <h3 class="card__title">Signal</h3>
+            <p class="card__desc">A role-based CRM for a study-abroad consultancy. A nine-stage application pipeline, SLA red flags, and money sealed behind the accounts role.</p>
+            <ul class="card__stack">
+              <li>React</li><li>Node.js</li><li>Vite</li><li>Gemini API</li>
+            </ul>
+            <a class="card__link" href="#" data-hover="Open">
+              <span>View project</span>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </a>
+          </div>
+          <div class="card__art" aria-hidden="true"></div>
+        </article>
+
+      </div>
+
+      <p class="work__more" data-reveal>
+        <a class="link-arrow" href="https://github.com/Muhammad-Ahsan-001" target="_blank" rel="noopener">
+          <span>More on GitHub</span>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </a>
+      </p>
+    </section>
+
+    <!-- ============ ROUTE SO FAR (timeline) ============ -->
+    <section class="section timeline" id="route">
+      <header class="section__head">
+        <p class="step" data-reveal>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h12M12 6l6 6-6 6"/></svg>
+          Stop 3 of 5 · Route so far
+        </p>
+        <h2 data-reveal>Where the road has <em>gone</em>.</h2>
+      </header>
+
+      <ol class="tl" data-reveal-group>
+        <li class="tl__item">
+          <span class="tl__date">Fall 2026</span>
+          <span class="tl__dot" aria-hidden="true"></span>
+          <div class="tl__body">
+            <h3>Operations Manager, IEEE Computer Society CUI</h3>
+            <p>Planning the semester, running recruitment, and shaping sessions around what first-year students actually need.</p>
+          </div>
+        </li>
+        <li class="tl__item">
+          <span class="tl__date">Spring 2026</span>
+          <span class="tl__dot" aria-hidden="true"></span>
+          <div class="tl__body">
+            <h3>Joint Secretary, IEEE Computer Society CUI</h3>
+            <p>Ran a hands-on exploratory data analysis workshop and a programming fundamentals session. Rebuilt the chapter website.</p>
+          </div>
+        </li>
+        <li class="tl__item">
+          <span class="tl__date">2025 to 2026</span>
+          <span class="tl__dot" aria-hidden="true"></span>
+          <div class="tl__body">
+            <h3>Building for real businesses</h3>
+            <p>Shipped production tools for a tax agency, an aluminium fabricator and a school, each with its own offline and printing quirks.</p>
+          </div>
+        </li>
+        <li class="tl__item">
+          <span class="tl__date">Fall 2024</span>
+          <span class="tl__dot" aria-hidden="true"></span>
+          <div class="tl__body">
+            <h3>Started BSCS at COMSATS University Islamabad</h3>
+            <p>Switched from pre-medical studies in Kohat to computer science. First commit within the month.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ============ TOOLKIT (floor plan) ============ -->
+    <section class="section toolkit" id="toolkit">
+      <header class="section__head section__head--split">
+        <div>
+          <p class="step" data-reveal>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h12M12 6l6 6-6 6"/></svg>
+            Stop 4 of 5 · Toolkit
+          </p>
+          <h2 data-reveal>A floor plan of what I <em>reach for</em>.</h2>
+        </div>
+        <p class="section__note" data-reveal>Rooms, not rankings. The corridor line shows the order I usually walk through them on a new project.</p>
+      </header>
+
+      <div class="plan" id="plan">
+        <svg class="plan__route" id="planRoute" aria-hidden="true"></svg>
+        <div class="room" data-room>
+          <span class="room__code">R-01</span>
+          <h3 class="room__name">Frontend</h3>
+          <ul class="room__chips">
+            <li>React 19</li><li>TypeScript</li><li>Vite</li><li>Tailwind CSS</li><li>Framer Motion</li><li>GSAP</li>
+          </ul>
+        </div>
+        <div class="room" data-room>
+          <span class="room__code">R-02</span>
+          <h3 class="room__name">Backend</h3>
+          <ul class="room__chips">
+            <li>Node.js</li><li>Fastify</li><li>PostgreSQL</li><li>Prisma</li><li>Drizzle</li><li>Redis</li>
+          </ul>
+        </div>
+        <div class="room" data-room>
+          <span class="room__code">R-03</span>
+          <h3 class="room__name">Platforms</h3>
+          <ul class="room__chips">
+            <li>Supabase</li><li>Firebase</li><li>Vercel</li><li>Docker</li><li>Cloudflare R2</li>
+          </ul>
+        </div>
+        <div class="room" data-room>
+          <span class="room__code">R-04</span>
+          <h3 class="room__name">Offline and 3D</h3>
+          <ul class="room__chips">
+            <li>PWA</li><li>IndexedDB</li><li>Workbox</li><li>Three.js</li><li>React Three Fiber</li><li>Blender</li>
+          </ul>
+        </div>
+        <div class="room" data-room>
+          <span class="room__code">R-05</span>
+          <h3 class="room__name">Data and AI</h3>
+          <ul class="room__chips">
+            <li>Python</li><li>pandas</li><li>seaborn</li><li>Gemini API</li><li>n8n</li>
+          </ul>
+        </div>
+        <div class="room" data-room>
+          <span class="room__code">R-06</span>
+          <h3 class="room__name">Quality</h3>
+          <ul class="room__chips">
+            <li>Vitest</li><li>Playwright</li><li>Zod</li><li>ESLint</li><li>pnpm workspaces</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section class="section contact" id="contact">
+      <div class="contact__grid">
+      <header class="section__head contact__head">
+        <p class="step" data-reveal>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Stop 5 of 5 · Destination
+        </p>
+        <h2 class="contact__title" data-reveal>Let's build something that <em>ships</em>.</h2>
+      </header>
+
+      <div class="contact__actions" data-reveal-group>
+        <p class="contact__lede">I take on a small number of projects at a time and reply to every message. If you have a business problem that software should solve, tell me about it.</p>
+        <a class="contact__email" href="mailto:mahsan7861100@gmail.com">mahsan7861100@gmail.com</a>
+        <div class="contact__row">
+          <button class="btn btn--primary" type="button" id="copyEmail" data-magnetic>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>
+            <span>Copy email</span>
+          </button>
+          <a class="btn btn--ghost" href="https://github.com/Muhammad-Ahsan-001" target="_blank" rel="noopener" data-magnetic>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg>
+            <span>GitHub</span>
+          </a>
+          <a class="btn btn--ghost" href="#" data-magnetic>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+            <span>LinkedIn</span>
+          </a>
+        </div>
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <span class="footer__brand">Muhammad Ahsan</span>
+      <span class="footer__mid">Built by hand in Islamabad · <span id="footerYear">2026</span></span>
+      <a class="footer__top link-arrow" href="#top">
+        <span>Back to start</span>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+      </a>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
