@@ -69,6 +69,9 @@
       if (!target) return;
       e.preventDefault();
       scrollToTarget(target);
+      // move focus with the scroll so keyboard and screen-reader users land where they asked to go
+      if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
       try { history.replaceState(null, '', id); } catch (err) { /* sandboxed hosts */ }
     });
   });
@@ -155,9 +158,9 @@
     ],
   };
   const auraCanvas = $('#aura');
-  const auraBase = () => (currentTheme() === 'light' ? 0.42 : 0.58);
+  const auraBase = () => (currentTheme() === 'light' ? 0.4 : 0.5);
   let auraSection = 0;
-  const aura = auraCanvas && window.createAura ? window.createAura(auraCanvas, { intensity: auraBase(), light: 0.55, colors: PALETTES[currentTheme()][0], scale: window.innerWidth < 760 ? 0.4 : 0.5 }) : null;
+  const aura = auraCanvas && window.createAura ? window.createAura(auraCanvas, { intensity: auraBase(), light: 0.55, colors: PALETTES[currentTheme()][0], scale: window.innerWidth < 760 ? 0.35 : 0.45 }) : null;
   if (aura) {
     if (reduced) { aura.renderOnce(9); auraCanvas.classList.add('is-on'); }
     else {
@@ -183,9 +186,11 @@
 
   const portrait = $('.hero__portrait');
   let heroIntroStarted = false;
+  let pathfinderRef = null;
   function startHeroIntro() {
     if (heroIntroStarted) return;
     heroIntroStarted = true;
+    if (pathfinderRef) pathfinderRef.resume();
     if (!(hasGsap && !reduced)) { $('.hero__canvas').style.opacity = reduced ? 0.55 : 1; return; }
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
     tl.fromTo('.hud', { y: -16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.8 }, 0.1)
@@ -270,7 +275,8 @@
     }
 
     function resize() {
-      S.dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // decorative canvas behind a mask: 1.25x is plenty and a quarter of the pixels of 2x
+      S.dpr = Math.min(window.devicePixelRatio || 1, 1.25);
       S.W = window.innerWidth;
       S.H = host.offsetHeight;
       canvas.width = S.W * S.dpr; canvas.height = S.H * S.dpr;
@@ -369,7 +375,7 @@
     }
 
     function frame(now) {
-      if (!S.active) return;
+      if (!S.active || !S.gate) return;
       if (!ep) { requestAnimationFrame(frame); return; }
       const { W, H } = S;
       ctx.clearRect(0, 0, W, H);
@@ -411,8 +417,7 @@
         const segs = (ep.path.length - 1) * pf;
         const whole = Math.floor(segs), part = segs - whole;
         ctx.save();
-        ctx.strokeStyle = C.accent; ctx.lineWidth = 2.2; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-        ctx.shadowColor = hexToRgba(C.accent, 0.8); ctx.shadowBlur = 14;
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
         ctx.beginPath();
         let hx = sx, hy = sy;
         ctx.moveTo(sx, sy);
@@ -421,7 +426,9 @@
           const [ax, ay] = cellCenter(ep.path[whole]); const [bx, by] = cellCenter(ep.path[whole + 1]);
           hx = ax + (bx - ax) * part; hy = ay + (by - ay) * part; ctx.lineTo(hx, hy);
         }
-        ctx.stroke();
+        // a wide faint pass stands in for a blur (shadowBlur re-renders a Gaussian every frame)
+        ctx.strokeStyle = hexToRgba(C.accent, 0.16); ctx.lineWidth = 9; ctx.stroke();
+        ctx.strokeStyle = C.accent; ctx.lineWidth = 2.2; ctx.stroke();
         ctx.restore();
         // head
         ctx.fillStyle = C.accent; ctx.beginPath(); ctx.arc(hx, hy, 3.5, 0, Math.PI * 2); ctx.fill();
@@ -484,14 +491,18 @@
 
     if (reduced) {
       // draw one finished route and stop
+      S.gate = true;
       ep.t0 = performance.now() - (ep.exploreDur + ep.pathDur) * 1000 - 10;
       S.active = true; frame(performance.now()); S.active = false;
-      return { readColors: () => { readColors(); S.active = true; ep.t0 = performance.now() - (ep.exploreDur + ep.pathDur) * 1000 - 10; frame(performance.now()); S.active = false; } };
+      return { readColors: () => { readColors(); S.active = true; ep.t0 = performance.now() - (ep.exploreDur + ep.pathDur) * 1000 - 10; frame(performance.now()); S.active = false; }, resume() {} };
     }
-    requestAnimationFrame(frame);
-    return { readColors };
+    // stay idle while the welcome overlay covers the hero; the hero intro opens the gate
+    S.gate = heroIntroStarted;
+    if (S.gate) requestAnimationFrame(frame);
+    return { readColors, resume() { if (S.gate) return; S.gate = true; if (S.active) requestAnimationFrame(frame); } };
   }
   const pathfinder = createPathfinder($('#pathCanvas'), $('#hero'));
+  pathfinderRef = pathfinder;
   onThemeChange.push(pathfinder.readColors);
 
   /* ---------- Rail + HUD progress ---------- */
@@ -502,10 +513,12 @@
   const hudSection = $('#hudSection');
   const hud = $('.hud');
   let stopFracs = [];
-  const docHeight = () => document.documentElement.scrollHeight - window.innerHeight;
+  let docH = 1;
+  const docHeight = () => docH;
 
   function layoutRail() {
-    const dh = Math.max(1, docHeight());
+    docH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const dh = docH;
     stopFracs = stops.map((a, i) => {
       if (i === 0) return 0;
       const t = stopTargets[i];
@@ -529,7 +542,7 @@
     const dh = Math.max(1, docHeight());
     const y = window.scrollY;
     const p = clamp(y / dh, 0, 1);
-    root.style.setProperty('--progress', p.toFixed(4));
+    if (window.innerWidth < 1024) hud.style.setProperty('--progress', p.toFixed(4));
     const rp = railPosition(p);
     railFill.style.height = `${rp * 100}%`;
     railYou.style.top = `${rp * 100}%`;
@@ -550,8 +563,9 @@
     }
     lastY = y;
   }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  if (lenis) lenis.on('scroll', onScroll);
+  // one scroll source: Lenis when it drives the page, the window otherwise
+  if (lenis) lenis.on('scroll', onScroll); else window.addEventListener('scroll', onScroll, { passive: true });
+  hud.addEventListener('focusin', () => { hud.style.transform = ''; });
   window.addEventListener('resize', () => { layoutRail(); onScroll(); });
   window.addEventListener('load', () => { layoutRail(); onScroll(); if (hasGsap) ScrollTrigger.refresh(); });
   if ('ResizeObserver' in window) new ResizeObserver(() => { layoutRail(); onScroll(); }).observe(document.body);
@@ -578,6 +592,7 @@
     const suffix = el.dataset.suffix ? `<sup>${el.dataset.suffix}</sup>` : '';
     const render = (v) => { el.innerHTML = `${Math.round(v)}${suffix}`; };
     if (!hasGsap || reduced) { render(target); return; }
+    render(0); // the markup carries the real value for the no-JS case; the count-up starts from zero
     const o = { v: 0 };
     gsap.to(o, { v: target, duration: 1.6, ease: 'power2.out', onUpdate: () => render(o.v), scrollTrigger: { trigger: el, start: 'top 90%', once: true } });
   });
@@ -588,10 +603,13 @@
     card.style.top = `calc(var(--hud-h) + 1.25rem + ${i * 10}px)`;
     if (!hasGsap || reduced) return;
     if (i < cards.length - 1) {
-      gsap.to(card, {
-        scale: 0.94, '--dim': 0.6, ease: 'none',
-        scrollTrigger: { trigger: cards[i + 1], start: 'top bottom', end: `top top+=${hudH() + 30}`, scrub: true },
-      });
+      // a real element with an opacity tween stays on the compositor; a custom property would repaint the card
+      const dim = document.createElement('span');
+      dim.className = 'card__dim'; dim.setAttribute('aria-hidden', 'true');
+      card.appendChild(dim);
+      gsap.timeline({ scrollTrigger: { trigger: cards[i + 1], start: 'top bottom', end: `top top+=${hudH() + 30}`, scrub: true } })
+        .to(card, { scale: 0.94, ease: 'none' }, 0)
+        .to(dim, { opacity: 0.6, ease: 'none' }, 0);
     }
     ScrollTrigger.create({ trigger: card, start: 'top 60%', end: 'bottom 40%', toggleClass: { targets: card, className: 'is-focus' } });
   });
@@ -793,12 +811,16 @@
     if (!hasGsap || reduced) { if (a1) a1.seek(a1.getDuration()); if (a2) a2.seek(a2.getDuration()); return; }
     if (a1) { a1.pause(); a1.seek(0); }
     if (a2) { a2.pause(); a2.seek(0); }
+    // the runtime rewrites many attributes per seek, so only seek on real progress changes and only the mark that is moving
+    let q1 = -1, q2 = -1;
     ScrollTrigger.create({
       trigger: '#signoff', start: 'top 85%', end: 'bottom bottom', scrub: 0.5,
       onUpdate: (st) => {
         const p = st.progress;
-        if (a1) a1.seek(clamp(p / 0.72, 0, 1) * a1.getDuration());
-        if (a2) a2.seek(clamp((p - 0.62) / 0.38, 0, 1) * a2.getDuration());
+        const v1 = Math.round(clamp(p / 0.72, 0, 1) * 240) / 240;
+        const v2 = Math.round(clamp((p - 0.62) / 0.38, 0, 1) * 240) / 240;
+        if (a1 && v1 !== q1) { q1 = v1; a1.seek(v1 * a1.getDuration()); }
+        if (a2 && v2 !== q2) { q2 = v2; a2.seek(v2 * a2.getDuration()); }
       },
     });
   });
@@ -812,20 +834,32 @@
   if (videoTile) {
     let videoOk = false;
     assetExists(videoTile.dataset.src).then((ok) => { videoOk = ok; videoTile.classList.toggle('is-soon', !ok); });
+    const pageParts = () => $$('main, .hud, .rail, .footer');
     const openVideo = () => {
       if (!videoOk) { toast('Intro video is on its way'); return; }
       if (!introVideo.src) introVideo.src = videoTile.dataset.src;
       lightbox.hidden = false;
+      pageParts().forEach((el) => { el.inert = true; });
       if (lenis) lenis.stop();
       introVideo.play().catch(() => {});
       $('#lightboxClose').focus();
     };
-    const closeVideo = () => { introVideo.pause(); lightbox.hidden = true; if (lenis) lenis.start(); videoPlay.focus(); };
+    const closeVideo = () => { introVideo.pause(); lightbox.hidden = true; pageParts().forEach((el) => { el.inert = false; }); if (lenis) lenis.start(); videoPlay.focus(); };
     videoPlay.addEventListener('click', openVideo);
     videoTile.addEventListener('click', (e) => { if (!e.target.closest('button')) openVideo(); });
     $('#lightboxClose').addEventListener('click', closeVideo);
     lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeVideo(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !lightbox.hidden) closeVideo(); });
+    document.addEventListener('keydown', (e) => {
+      if (lightbox.hidden) return;
+      if (e.key === 'Escape') { closeVideo(); return; }
+      if (e.key === 'Tab') {
+        // keep focus inside the dialog
+        const focusables = [$('#lightboxClose'), introVideo];
+        const i = focusables.indexOf(document.activeElement);
+        const next = e.shiftKey ? (i <= 0 ? focusables.length - 1 : i - 1) : (i >= focusables.length - 1 ? 0 : i + 1);
+        e.preventDefault(); focusables[next].focus();
+      }
+    });
   }
 
   const voiceTile = $('#voiceTile'), voicePlay = $('#voicePlay'), voiceAudio = $('#voiceAudio'), voiceWave = $('#voiceWave'), voiceTime = $('#voiceTime');
@@ -866,10 +900,12 @@
         } catch (e) { analyser = null; }
         await voiceAudio.play().catch(() => toast('Could not play the voice note'));
         voiceTile.classList.add('is-playing'); animate();
+        voicePlay.setAttribute('aria-label', 'Pause the voice note'); voicePlay.setAttribute('aria-pressed', 'true');
       } else { voiceAudio.pause(); }
     });
-    voiceAudio.addEventListener('pause', () => { voiceTile.classList.remove('is-playing'); rest(); });
-    voiceAudio.addEventListener('ended', () => { voiceTile.classList.remove('is-playing'); rest(); voiceTime.textContent = fmtTime(voiceAudio.duration || 0); });
+    const stopped = () => { voiceTile.classList.remove('is-playing'); rest(); voicePlay.setAttribute('aria-label', 'Play the voice note'); voicePlay.setAttribute('aria-pressed', 'false'); };
+    voiceAudio.addEventListener('pause', stopped);
+    voiceAudio.addEventListener('ended', () => { stopped(); voiceTime.textContent = fmtTime(voiceAudio.duration || 0); });
   }
 
   const cvTile = $('#cvTile');

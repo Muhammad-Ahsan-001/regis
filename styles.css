@@ -24,7 +24,7 @@
 
   --shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.75), 0 12px 30px -12px rgba(0, 0, 0, 0.6);
   --shadow-soft: 0 20px 50px -25px rgba(0, 0, 0, 0.7);
-  --grain-opacity: 0.045;
+  --grain-opacity: 0.03;
 
   --font-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
   --font-body: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
@@ -51,14 +51,14 @@
     --muted: #5B6B65;
     --line: rgba(18, 26, 30, 0.10);
     --line-strong: rgba(18, 26, 30, 0.24);
-    --accent: #B5700C;
+    --accent: #9A5F08;
     --accent-ink: #FFF8EA;
-    --accent-soft: rgba(181, 112, 12, 0.12);
+    --accent-soft: rgba(154, 95, 8, 0.12);
     --teal: #2E7C66;
     --brick: #B4452F;
     --shadow: 0 40px 90px -30px rgba(18, 26, 30, 0.35), 0 12px 30px -12px rgba(18, 26, 30, 0.2);
     --shadow-soft: 0 20px 50px -25px rgba(18, 26, 30, 0.3);
-    --grain-opacity: 0.06;
+    --grain-opacity: 0.04;
   }
 }
 :root[data-theme="light"] {
@@ -71,9 +71,9 @@
   --muted: #5B6B65;
   --line: rgba(18, 26, 30, 0.10);
   --line-strong: rgba(18, 26, 30, 0.24);
-  --accent: #B5700C;
+  --accent: #9A5F08;
   --accent-ink: #FFF8EA;
-  --accent-soft: rgba(181, 112, 12, 0.12);
+  --accent-soft: rgba(154, 95, 8, 0.12);
   --teal: #2E7C66;
   --brick: #B4452F;
   --shadow: 0 40px 90px -30px rgba(18, 26, 30, 0.35), 0 12px 30px -12px rgba(18, 26, 30, 0.2);
@@ -109,7 +109,6 @@ body::before {
   opacity: var(--grain-opacity);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 160px 160px;
-  mix-blend-mode: overlay;
 }
 
 img { max-width: 100%; height: auto; display: block; }
@@ -120,6 +119,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 ::selection { background: var(--accent); color: var(--accent-ink); }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+main:focus, section:focus, .welcome:focus { outline: none; }
 
 .skip {
   position: fixed; top: -100px; left: 16px; z-index: 100;
@@ -220,7 +220,7 @@ main { position: relative; z-index: 1; }
 /* ---------- Cursor ---------- */
 .cursor { display: none; }
 @media (pointer: fine) {
-  .cursor { display: block; position: fixed; inset: 0; pointer-events: none; z-index: 90; }
+  .cursor { display: block; position: fixed; inset: 0; pointer-events: none; z-index: 200; }
   .cursor__dot, .cursor__ring {
     position: absolute; top: 0; left: 0; border-radius: 50%;
     transform: translate(-50%, -50%);
@@ -264,7 +264,7 @@ main { position: relative; z-index: 1; }
 }
 @media (min-width: 1024px) { .hud::after { display: none; } }
 .hud__brand {
-  display: inline-flex; align-items: center; gap: 0.6rem;
+  display: inline-flex; align-items: center; gap: 0.6rem; justify-self: start; width: fit-content;
   font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; font-size: 1rem;
 }
 .hud__pin { width: 20px; height: 20px; color: var(--accent); }
@@ -330,7 +330,7 @@ main { position: relative; z-index: 1; }
     background: var(--bg); border: 1.5px solid var(--line-strong); transition: border-color 0.3s ease, background-color 0.3s ease, transform 0.3s var(--ease);
   }
   .rail__stops span { color: var(--muted); white-space: nowrap; opacity: 0; transform: translateX(-6px); transition: opacity 0.3s ease, transform 0.4s var(--ease), color 0.3s ease; }
-  .rail__stops a:hover span, .rail__stops a.is-active span { opacity: 1; transform: none; }
+  .rail__stops a:hover span, .rail__stops a:focus-visible span, .rail__stops a.is-active span { opacity: 1; transform: none; }
   .rail__stops a.is-active i, .rail__stops a.is-passed i { border-color: var(--accent); background: var(--accent); }
   .rail__stops a.is-active span { color: var(--ink); }
   .rail__stops a:hover i { transform: scale(1.3); border-color: var(--accent); }
@@ -459,14 +459,12 @@ main { position: relative; z-index: 1; }
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
   transform-origin: top center;
-  will-change: transform;
   overflow: hidden;
-  --dim: 0;
 }
-.card::after {
+.card__dim {
   /* dims the card as the next one slides over it, without letting earlier cards show through */
-  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: var(--bg); opacity: var(--dim); z-index: 3;
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: var(--bg); opacity: 0; z-index: 3; will-change: opacity;
 }
 @media (min-width: 900px) { .card { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 2.5rem; } }
 .card__body { display: flex; flex-direction: column; gap: 1.1rem; min-width: 0; }
@@ -498,9 +496,11 @@ main { position: relative; z-index: 1; }
 .card__art .head { opacity: 0; }
 .card:hover .card__art .head, .card.is-focus .card__art .head { animation: head-in 0.4s ease 1.3s forwards; }
 @keyframes head-in { to { opacity: 1; } }
-.card__art .playhead { animation: playhead 6s linear infinite; }
+.card.is-focus .card__art .playhead { animation: playhead 6s linear infinite; }
 @keyframes playhead { from { transform: translateX(0); } to { transform: translateX(400px); } }
-.card__art .pulse-node { transform-box: fill-box; transform-origin: center; animation: node 2.4s ease-in-out infinite; }
+.card__art .pulse-node { transform-box: fill-box; transform-origin: center; }
+.card.is-focus .card__art .pulse-node { animation: node 2.4s ease-in-out infinite; }
+.card__art { contain: paint; }
 @keyframes node { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: 0.6; } }
 .work__more { margin-top: 4rem; text-align: right; }
 
@@ -530,8 +530,7 @@ main { position: relative; z-index: 1; }
   position: relative; z-index: 1;
   padding: 1.5rem 1.5rem 1.6rem;
   border: 1px solid var(--line-strong); border-radius: 14px;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
   transition: border-color 0.35s ease, transform 0.5s var(--ease), background-color 0.35s ease, box-shadow 0.35s ease;
 }
 .room::after {
@@ -598,7 +597,8 @@ main { position: relative; z-index: 1; }
 /* surfaces let the aura read through */
 .marquee, .footer { background: color-mix(in srgb, var(--bg) 70%, transparent); }
 .stats li { background: color-mix(in srgb, var(--bg) 62%, transparent); }
-.card { background: color-mix(in srgb, var(--bg-2) 93%, transparent); }
+/* cards stay opaque: they stack, and anything translucent lets the card beneath ghost through */
+.card { background: var(--bg-2); }
 
 /* ---------- Welcome ---------- */
 .welcome-scrim { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: none; }
@@ -637,6 +637,8 @@ body.is-welcome { overflow: hidden; }
 .hud__sig svg { display: block; width: 100%; height: auto; overflow: visible; }
 .hud__sig:empty { width: 118px; height: 42px; }
 .hud__brand-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+html:not(.js) .hud__sig { display: none; }
+html:not(.js) .hud__brand-text { position: static; width: auto; height: auto; clip: auto; font-family: var(--font-display); font-weight: 700; }
 @media (max-width: 760px) { .hud__sig { width: 96px; } }
 
 /* ---------- Media tiles ---------- */
@@ -680,7 +682,8 @@ body.is-welcome { overflow: hidden; }
 .media__tile--cv:hover .media__arrow { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); transform: translateY(2px); }
 
 /* ---------- Lightbox ---------- */
-.lightbox { position: fixed; inset: 0; z-index: 95; display: grid; place-items: center; padding: 1rem; background: color-mix(in srgb, var(--bg) 86%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.lightbox { position: fixed; inset: 0; z-index: 95; display: grid; place-items: center; padding: 1rem; background: color-mix(in srgb, var(--bg) 94%, transparent); }
+.lightbox video { cursor: auto; }
 .lightbox[hidden] { display: none; }
 .lightbox__inner { position: relative; width: min(960px, 96vw); }
 .lightbox video { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; background: #000; box-shadow: var(--shadow); }

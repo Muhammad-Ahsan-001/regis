@@ -47,19 +47,22 @@
       vec2 r = vec2(fbm(p * 1.4 + 2.3 * q + vec2(1.7, 9.2) + t * 0.3), fbm(p * 1.4 + 2.3 * q + vec2(8.3, 2.8) - t * 0.2));
       float f = fbm(p * 1.4 + 2.0 * r);
 
-      vec3 col = mix(uA, uB, clamp(f * f * 2.6, 0.0, 1.0));
-      col = mix(col, uC, clamp(length(q) * 0.9, 0.0, 1.0));
+      /* dominant colour carries the field; the second lights the bright filaments; the third only tints the folds */
+      float t1 = smoothstep(0.42, 0.9, f);
+      vec3 col = mix(uA, uB, t1);
+      float t2 = smoothstep(0.62, 1.05, length(q));
+      col = mix(col, uC, t2 * 0.55);
 
       /* the field breathes: brighter filaments where the warp folds */
-      float fil = smoothstep(0.32, 0.82, f) * 0.95 + 0.05;
+      float fil = smoothstep(0.3, 0.85, f) * 0.95 + 0.05;
       /* lift saturation so the light reads as colour, not smoke */
       float lum = dot(col, vec3(0.299, 0.587, 0.114));
-      col = mix(vec3(lum), col, 1.35) * 1.25;
+      col = mix(vec3(lum), col, 1.3) * 1.3;
 
       /* focus: a soft halo around uCenter (welcome screen), else a broad wash biased to the top-right */
       vec2 c = (uCenter - 0.5) * vec2(aspect, 1.0);
       float dc = length(p - c);
-      float halo = exp(-dc * dc * 2.2);
+      float halo = exp(-dc * dc * 2.6) * 1.25;
       float wash = 0.55 + 0.45 * smoothstep(-0.9, 0.9, p.x + p.y * 0.4);
       float shape = mix(wash, halo, uFocus);
 
@@ -110,19 +113,25 @@
       pointer: [0.5, 0.5], targetPointer: [0.5, 0.5],
       A: hexToVec(opts.colors?.[0] || '#F2B544'), B: hexToVec(opts.colors?.[1] || '#7FB7A3'), C: hexToVec(opts.colors?.[2] || '#D2664C'),
       tA: null, tB: null, tC: null,
-      scale: opts.scale ?? 0.5, running: false, raf: 0, start: performance.now(), timeOffset: 0, paused: false,
+      scale: opts.scale ?? 0.45, running: false, raf: 0, start: performance.now(), timeOffset: 0, paused: false, lastFrame: 0,
     };
 
+    // size is read on resize only, never inside the frame (a layout read per frame would fight the scroll animations)
     function resize() {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       const w = Math.max(1, Math.floor(canvas.clientWidth * dpr * state.scale));
       const h = Math.max(1, Math.floor(canvas.clientHeight * dpr * state.scale));
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
     }
+    resize();
+    let rt;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(resize, 120); });
 
     function frame(now) {
       if (!state.running) return;
-      resize();
+      // hold the field to ~45 fps: it is atmosphere, and the saving goes to the page's own animation
+      if (now - state.lastFrame < 21) { state.raf = requestAnimationFrame(frame); return; }
+      state.lastFrame = now;
       const k = 0.06;
       state.intensity = lerp(state.intensity, state.targetIntensity, k);
       state.light = lerp(state.light, state.targetLight, k);
@@ -150,7 +159,7 @@
     const api = {
       start() { if (state.running) return; state.running = true; state.start = performance.now(); state.raf = requestAnimationFrame(frame); },
       stop() { state.running = false; cancelAnimationFrame(state.raf); },
-      renderOnce(t = 12) { state.timeOffset = t; resize(); state.intensity = state.targetIntensity; state.focus = state.targetFocus; state.light = state.targetLight; state.center = [...state.targetCenter]; if (state.tA) { state.A = [...state.tA]; state.B = [...state.tB]; state.C = [...state.tC]; } const r = state.running; state.running = true; frame(performance.now()); state.running = r; if (!r) cancelAnimationFrame(state.raf); },
+      renderOnce(t = 12) { state.timeOffset = t; resize(); state.lastFrame = 0; state.intensity = state.targetIntensity; state.focus = state.targetFocus; state.light = state.targetLight; state.center = [...state.targetCenter]; if (state.tA) { state.A = [...state.tA]; state.B = [...state.tB]; state.C = [...state.tC]; } const r = state.running; state.running = true; frame(performance.now()); state.running = r; if (!r) cancelAnimationFrame(state.raf); },
       set(partial) {
         if (partial.intensity !== undefined) state.targetIntensity = partial.intensity;
         if (partial.light !== undefined) state.targetLight = partial.light;

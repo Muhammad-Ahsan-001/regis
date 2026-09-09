@@ -14,6 +14,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@1&display=swap">
   <link rel="stylesheet" href="styles.css">
+  <link rel="preload" href="assets/signature.animated.svg" as="fetch" crossorigin>
+  <link rel="preload" href="assets/signature.timing.json" as="fetch" crossorigin>
   <script>
     (function () {
       var h = document.documentElement;
@@ -157,7 +159,7 @@
 
       <div class="about__grid">
         <figure class="about__photo" data-reveal-photo>
-          <img src="assets/campus.jpg" srcset="assets/campus-sm.jpg 640w, assets/campus.jpg 1200w" sizes="(max-width: 900px) 90vw, 38vw" alt="Muhammad Ahsan standing on the COMSATS campus lawn in front of a red-brick building" width="1200" height="1600" loading="lazy">
+          <img src="assets/campus.jpg" srcset="assets/campus-sm.jpg 640w, assets/campus.jpg 1000w" sizes="(max-width: 900px) 90vw, 38vw" alt="Muhammad Ahsan standing on the COMSATS campus lawn in front of a red-brick building" width="1200" height="1600" loading="lazy">
           <figcaption class="tag">COMSATS University Islamabad</figcaption>
         </figure>
 
@@ -176,10 +178,10 @@
       </div>
 
       <ul class="stats" data-reveal-group>
-        <li><strong data-count="5" data-suffix="th">0</strong><span>Semester, and counting</span></li>
-        <li><strong data-count="3">0</strong><span>Apps live in production</span></li>
-        <li><strong data-count="2">0</strong><span>Terms on the IEEE CS team</span></li>
-        <li><strong data-count="3">0</strong><span>Workshops taught on campus</span></li>
+        <li><strong data-count="5" data-suffix="th">5<sup>th</sup></strong><span>Semester, and counting</span></li>
+        <li><strong data-count="3">3</strong><span>Apps live in production</span></li>
+        <li><strong data-count="2">2</strong><span>Terms on the IEEE CS team</span></li>
+        <li><strong data-count="3">3</strong><span>Workshops taught on campus</span></li>
       </ul>
 
       <div class="media" data-reveal-group>
@@ -198,7 +200,7 @@
 
         <article class="media__tile media__tile--voice" id="voiceTile" data-src="assets/voice-note.mp3">
           <span class="chip media__soon">Coming soon</span>
-          <button class="media__play" type="button" id="voicePlay" aria-label="Play the voice note">
+          <button class="media__play" type="button" id="voicePlay" aria-label="Play the voice note" aria-pressed="false">
             <svg class="icon icon--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/></svg>
             <svg class="icon icon--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor" stroke="none"/></svg>
           </button>
@@ -509,15 +511,15 @@
     </section>
 
     <!-- ============ SIGN-OFF ============ -->
-    <div class="signoff" id="signoff" aria-label="Signed, Ahsani">
+    <div class="signoff" id="signoff" role="group" aria-label="Signed, Ahsani">
       <p class="signoff__label" data-reveal>Signed,</p>
-      <div class="seal" id="seal" data-src="assets/seal.animated.svg" aria-hidden="true"></div>
+      <div class="seal" id="seal" data-src="assets/seal.animated.svg" role="img" aria-label="Ahsani"></div>
       <p class="signoff__alias" data-reveal>also answers to</p>
       <div class="alias" id="alias" data-src="assets/alias.animated.svg" role="img" aria-label="Regis"></div>
     </div>
   </main>
 
-  <div class="lightbox" id="lightbox" hidden>
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Intro video" hidden>
     <div class="lightbox__inner">
       <button class="lightbox__close" id="lightboxClose" type="button" aria-label="Close video">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>

@@ -15,9 +15,12 @@
   const hasGsap = typeof gsap !== 'undefined';
   const pending = root.classList.contains('welcome-pending');
 
+  const pageParts = () => Array.from(document.querySelectorAll('main, .hud, .rail, .footer'));
+  const setInert = (on) => pageParts().forEach((el) => { el.inert = on; });
   const bail = () => {
     root.classList.remove('welcome-pending');
     document.body.classList.remove('is-welcome');
+    setInert(false);
     welcome.remove(); scrim.remove();
     if (site.hudSig) site.hudSig.classList.add('is-on');
     if (site.lenis) site.lenis.start();
@@ -90,6 +93,12 @@
 
   /* ---------- pen-tip tracking from the timing file ---------- */
   let timing = null, svg = null, api = null;
+  // the SVG's screen rect is read at most every 8 frames (the stage settles within the first second)
+  let rectCache = null, rectAge = 99, vbCache = null;
+  function sigRect() {
+    if (!rectCache || ++rectAge >= 8) { rectCache = svg.getBoundingClientRect(); rectAge = 0; }
+    return rectCache;
+  }
   function tipAt(T) {
     if (!timing || !svg) return null;
     for (const s of timing.strokes) {
@@ -100,8 +109,9 @@
       let lo = 0, hi = pts.length - 1;
       while (lo < hi) { const mid = (lo + hi) >> 1; if (pts[mid].t < target) lo = mid + 1; else hi = mid; }
       const p = pts[lo], q = pts[Math.max(0, lo - 1)];
-      const r = svg.getBoundingClientRect();
-      const vb = (svg.getAttribute('viewBox') || '0 0 1000 420').split(/\s+/).map(Number);
+      const r = sigRect();
+      if (!vbCache) vbCache = (svg.getAttribute('viewBox') || '0 0 1000 420').split(/\s+/).map(Number);
+      const vb = vbCache;
       const scale = r.width / vb[2];
       const x = r.left + (p.x - vb[0]) * scale, y = r.top + (p.y - vb[1]) * scale;
       const dx = p.x - q.x, dy = p.y - q.y, len = Math.hypot(dx, dy) || 1;
@@ -168,9 +178,16 @@
         root.classList.remove('welcome-pending');
         welcome.remove(); scrim.remove();
         document.body.classList.remove('is-welcome');
+        setInert(false);
         if (auraCanvas) auraCanvas.classList.remove('is-front');
         if (brand) brand.classList.add('is-on');
         if (site.lenis) site.lenis.start();
+        // hand focus to the page without painting a ring: main takes focus silently, Tab then moves on from there
+        const mainEl = $('main');
+        if (mainEl && (document.activeElement === document.body || document.activeElement === null)) {
+          if (!mainEl.hasAttribute('tabindex')) mainEl.setAttribute('tabindex', '-1');
+          mainEl.focus({ preventScroll: true });
+        }
       },
     });
     tl.to([caption, meta, skipBtn], { opacity: 0, duration: 0.35 }, 0)
@@ -192,7 +209,8 @@
 
   async function start() {
     if (auraCanvas) auraCanvas.classList.add('is-front');
-    if (aura) aura.set({ focus: 1, intensity: 0.15, light: 0, center: [0.5, 0.5], colors: ['#F2B544', '#6FB9A8', '#7A86E8'] });
+    // gold light with a cream core and teal at the edges: the aura should look lit, not smoky
+    if (aura) aura.set({ focus: 1, intensity: 0.15, light: 0, center: [0.5, 0.5], colors: ['#F2B544', '#F6DDA6', '#6FB9A8'] });
     gsap.set(stage, { opacity: 0, scale: 0.97 });
     gsap.set([meta, skipBtn], { opacity: 0 });
     try {
@@ -207,8 +225,12 @@
     }
     api.pause(); api.seek(0);
     api.setSpeed(repeat ? 2.4 : 1);
+    setInert(true);
     if (aura) aura.set({ intensity: 0.9, center: sigCenterNorm() });
     gsap.to(stage, { opacity: 1, scale: 1, duration: 1.1, ease: 'power3.out' });
+    // focus the dialog itself (no ring); one Tab reaches Skip
+    welcome.setAttribute('tabindex', '-1');
+    welcome.focus({ preventScroll: true });
     gsap.to([meta, skipBtn], { opacity: 1, duration: 0.8, delay: 0.6 });
     raf = requestAnimationFrame(loop);
     gsap.delayedCall(repeat ? 0.25 : 0.65, () => { if (!exiting) api.play(); });
