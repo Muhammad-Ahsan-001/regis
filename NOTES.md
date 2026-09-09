@@ -35,9 +35,14 @@ Made with your InkFlow Studio code, not by hand.
 
 ## Placeholders still to fill
 
-- Six project cards in `index.html` (Atlas, Ledger, Frame, Campus, Studio, Signal). Card art is generated from the `data-art` attribute in `main.js`.
+- Six project cards in `index.html` (Atlas, Ledger, Frame, Campus, Studio, Signal). Card art is generated from the `data-art` attribute in `main.js`. Their "View project" links point to `#` until real URLs exist.
 - LinkedIn button in the contact section points to `#`.
 - Stats in the About section.
+
+## Which signature is which
+
+- Main mark (welcome, header, sign-off): `tools/designs/copperplate2.json`. Alias: `tools/designs/regis.json`.
+- Other candidates from the design round live in `tools/designs/` with PNG renders in `tools/out/` if you want to switch: run `node tools/sig-install.cjs tools/designs/<main>.json tools/designs/<alias>.json`.
 
 ## Welcome screen behaviour
 
