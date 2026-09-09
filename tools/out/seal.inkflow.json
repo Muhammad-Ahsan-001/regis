@@ -1,19 +1,19 @@
 {
   "schemaVersion": 3,
-  "id": "proj_nrt8xi1i2",
+  "id": "proj_scvp2bej2",
   "name": "Ahsani copperplate 2",
-  "createdAt": 1788923347358,
-  "modifiedAt": 1788923347358,
+  "createdAt": 1788940856302,
+  "modifiedAt": 1788940856302,
   "artboards": [
     {
-      "id": "ab_t1hx25901",
+      "id": "ab_9a2tt1ry1",
       "name": "Artboard 1",
       "width": 1000,
       "height": 420,
       "background": "transparent",
       "children": [
         {
-          "id": "el_xdfshvqd3",
+          "id": "el_qqndfrkb3",
           "type": "stroke",
           "name": "A",
           "visible": true,
@@ -2301,7 +2301,7 @@
           "capturedStartMs": 0
         },
         {
-          "id": "el_pul94hyh4",
+          "id": "el_j37aa1c64",
           "type": "stroke",
           "name": "hsani",
           "visible": true,
@@ -7229,7 +7229,7 @@
           "capturedStartMs": 1268
         },
         {
-          "id": "el_z79qaqoj5",
+          "id": "el_8biyfe025",
           "type": "stroke",
           "name": "i-dot",
           "visible": true,
@@ -7357,7 +7357,7 @@
           "capturedStartMs": 3975
         },
         {
-          "id": "el_n8fodb246",
+          "id": "el_dvoty0916",
           "type": "stroke",
           "name": "swash",
           "visible": true,
@@ -9443,18 +9443,18 @@
       ]
     }
   ],
-  "activeArtboardId": "ab_t1hx25901",
+  "activeArtboardId": "ab_9a2tt1ry1",
   "fonts": [],
   "timeline": {
     "durationMs": 5130,
     "tracks": [
       {
-        "id": "trk_1f0h850l7",
-        "elementId": "el_xdfshvqd3",
+        "id": "trk_2bp8ufv77",
+        "elementId": "el_qqndfrkb3",
         "property": "trim",
         "keyframes": [
           {
-            "id": "kf_itkpggx48",
+            "id": "kf_cogsgimc8",
             "time": 0,
             "value": 0,
             "easing": {
@@ -9462,7 +9462,7 @@
             }
           },
           {
-            "id": "kf_av3ppe469",
+            "id": "kf_48rmfgkx9",
             "time": 1208,
             "value": 1,
             "easing": {
@@ -9473,12 +9473,12 @@
         "enabled": true
       },
       {
-        "id": "trk_l05l31s3a",
-        "elementId": "el_pul94hyh4",
+        "id": "trk_35tiu9qua",
+        "elementId": "el_j37aa1c64",
         "property": "trim",
         "keyframes": [
           {
-            "id": "kf_aclhnjw7b",
+            "id": "kf_ot7l1v79b",
             "time": 1268,
             "value": 0,
             "easing": {
@@ -9486,7 +9486,7 @@
             }
           },
           {
-            "id": "kf_5wz9ureyc",
+            "id": "kf_lfheechmc",
             "time": 3835,
             "value": 1,
             "easing": {
@@ -9497,12 +9497,12 @@
         "enabled": true
       },
       {
-        "id": "trk_f084qsqwd",
-        "elementId": "el_z79qaqoj5",
+        "id": "trk_lpj71itmd",
+        "elementId": "el_8biyfe025",
         "property": "trim",
         "keyframes": [
           {
-            "id": "kf_om3nrhg5e",
+            "id": "kf_dnmojzkge",
             "time": 3975,
             "value": 0,
             "easing": {
@@ -9510,7 +9510,7 @@
             }
           },
           {
-            "id": "kf_y9bayc1yf",
+            "id": "kf_b35x9w56f",
             "time": 4035,
             "value": 1,
             "easing": {
@@ -9521,12 +9521,12 @@
         "enabled": true
       },
       {
-        "id": "trk_gzb9vv8cg",
-        "elementId": "el_n8fodb246",
+        "id": "trk_txnlpndqg",
+        "elementId": "el_dvoty0916",
         "property": "trim",
         "keyframes": [
           {
-            "id": "kf_bstzcuokh",
+            "id": "kf_vgholp79h",
             "time": 4215,
             "value": 0,
             "easing": {
@@ -9534,7 +9534,7 @@
             }
           },
           {
-            "id": "kf_v6ta0ravi",
+            "id": "kf_gxu27qgbi",
             "time": 4930,
             "value": 1,
             "easing": {
