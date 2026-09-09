@@ -41,7 +41,7 @@ Made with your InkFlow Studio code, not by hand.
 
 ## Which signature is which
 
-- Main mark (welcome, header, sign-off): `tools/designs/copperplate2.json`. Alias: `tools/designs/regis.json`.
+- Main mark (welcome, header, sign-off): `tools/designs/copperplate2.json`. Alias: `tools/designs/regis.json` (the judges preferred it over `regis2` at small size).
 - Other candidates from the design round live in `tools/designs/` with PNG renders in `tools/out/` if you want to switch: run `node tools/sig-install.cjs tools/designs/<main>.json tools/designs/<alias>.json`.
 
 ## Welcome screen behaviour

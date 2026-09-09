@@ -51,6 +51,7 @@
   let lenis = null;
   if (window.Lenis && !reduced && hasGsap) {
     lenis = new Lenis({ lerp: 0.1, smoothWheel: true, wheelMultiplier: 1 });
+    root.style.scrollBehavior = 'auto'; // Lenis owns smoothing; native smooth scrolling on top of it would double up
     lenis.on('scroll', ScrollTrigger.update);
     gsap.ticker.add((t) => lenis.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);
