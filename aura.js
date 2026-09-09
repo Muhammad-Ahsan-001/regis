@@ -53,8 +53,8 @@
       float t2 = smoothstep(0.62, 1.05, length(q));
       col = mix(col, uC, t2 * 0.55);
 
-      /* the field breathes: brighter filaments where the warp folds */
-      float fil = smoothstep(0.3, 0.85, f) * 0.95 + 0.05;
+      /* the field breathes: bright filaments where the warp folds, near-black between them (no khaki floor) */
+      float fil = pow(smoothstep(0.4, 0.95, f), 1.6) * 0.97 + 0.03;
       /* lift saturation so the light reads as colour, not smoke */
       float lum = dot(col, vec3(0.299, 0.587, 0.114));
       col = mix(vec3(lum), col, 1.3) * 1.3;
@@ -63,7 +63,7 @@
       vec2 c = (uCenter - 0.5) * vec2(aspect, 1.0);
       float dc = length(p - c);
       float halo = exp(-dc * dc * 2.6) * 1.25;
-      float wash = 0.55 + 0.45 * smoothstep(-0.9, 0.9, p.x + p.y * 0.4);
+      float wash = 0.35 + 0.65 * smoothstep(-0.9, 0.9, p.x + p.y * 0.4);
       float shape = mix(wash, halo, uFocus);
 
       /* pointer light */
@@ -158,7 +158,7 @@
 
     const api = {
       start() { if (state.running) return; state.running = true; state.start = performance.now(); state.raf = requestAnimationFrame(frame); },
-      stop() { state.running = false; cancelAnimationFrame(state.raf); },
+      stop() { if (state.running) state.timeOffset += (performance.now() - state.start) / 1000; state.running = false; cancelAnimationFrame(state.raf); },
       renderOnce(t = 12) { state.timeOffset = t; resize(); state.lastFrame = 0; state.intensity = state.targetIntensity; state.focus = state.targetFocus; state.light = state.targetLight; state.center = [...state.targetCenter]; if (state.tA) { state.A = [...state.tA]; state.B = [...state.tB]; state.C = [...state.tC]; } const r = state.running; state.running = true; frame(performance.now()); state.running = r; if (!r) cancelAnimationFrame(state.raf); },
       set(partial) {
         if (partial.intensity !== undefined) state.targetIntensity = partial.intensity;

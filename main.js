@@ -12,7 +12,7 @@
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = window.matchMedia('(pointer: fine)').matches;
   const hasGsap = typeof gsap !== 'undefined';
-  if (hasGsap && typeof ScrollTrigger !== 'undefined') gsap.registerPlugin(ScrollTrigger);
+  if (hasGsap && typeof ScrollTrigger !== 'undefined') { gsap.registerPlugin(ScrollTrigger); ScrollTrigger.config({ ignoreMobileResize: true }); }
 
   const cssVar = (name) => getComputedStyle(root).getPropertyValue(name).trim();
   const hexToRgba = (hex, a) => {
@@ -32,11 +32,14 @@
 
   const currentTheme = () => root.dataset.theme || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
   const onThemeChange = [];
-  $('#themeToggle').addEventListener('click', () => {
+  const themeToggle = $('#themeToggle');
+  const labelTheme = () => { themeToggle.setAttribute('aria-label', currentTheme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'); };
+  labelTheme();
+  themeToggle.addEventListener('click', () => {
     const next = currentTheme() === 'dark' ? 'light' : 'dark';
     root.dataset.theme = next;
     try { localStorage.setItem('theme', next); } catch (e) { /* ignore */ }
-    applyThemeMeta();
+    applyThemeMeta(); labelTheme();
     onThemeChange.forEach((fn) => fn());
   });
 
@@ -104,6 +107,7 @@
     const rx = gsap.quickTo(ring, 'x', { duration: 0.42, ease: 'power3' });
     const ry = gsap.quickTo(ring, 'y', { duration: 0.42, ease: 'power3' });
     let shown = false;
+    cur.classList.add('cursor--hidden'); // stays out of sight until the pointer actually moves
     window.addEventListener('mousemove', (e) => {
       if (!shown) { gsap.set([dot, ring], { x: e.clientX, y: e.clientY }); shown = true; }
       dx(e.clientX); dy(e.clientY); rx(e.clientX); ry(e.clientY);
@@ -159,7 +163,7 @@
     ],
   };
   const auraCanvas = $('#aura');
-  const auraBase = () => (currentTheme() === 'light' ? 0.4 : 0.5);
+  const auraBase = () => (currentTheme() === 'light' ? 0.22 : 0.44);
   let auraSection = 0;
   const aura = auraCanvas && window.createAura ? window.createAura(auraCanvas, { intensity: auraBase(), light: 0.55, colors: PALETTES[currentTheme()][0], scale: window.innerWidth < 760 ? 0.35 : 0.45 }) : null;
   if (aura) {
@@ -221,7 +225,7 @@
     let lastFollow = 0;
 
     const readColors = () => {
-      C.ink = cssVar('--ink'); C.accent = cssVar('--accent'); C.teal = cssVar('--teal'); C.muted = cssVar('--muted');
+      C.ink = cssVar('--ink'); C.accent = cssVar('--accent'); C.teal = cssVar('--teal'); C.muted = cssVar('--muted'); C.bg = cssVar('--bg');
       buildBackground();
     };
 
@@ -370,7 +374,7 @@
       ctx.bezierCurveTo(x - 9, y - 9, x - 9, y - 22, x, y - 22);
       ctx.bezierCurveTo(x + 9, y - 22, x + 9, y - 9, x, y);
       ctx.fill();
-      ctx.fillStyle = cssVar('--bg');
+      ctx.fillStyle = C.bg;
       ctx.beginPath(); ctx.arc(x, y - 14, 3.2, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
@@ -380,6 +384,8 @@
       if (!ep) { requestAnimationFrame(frame); return; }
       const { W, H } = S;
       ctx.clearRect(0, 0, W, H);
+      // on touch screens the plan runs behind the copy with no pointer to follow, so it stays quiet
+      ctx.globalAlpha = finePointer ? 1 : 0.55;
       if (S.bg) ctx.drawImage(S.bg, 0, 0, W, H);
 
       // pointer halo
@@ -391,8 +397,8 @@
 
       const t = (now - ep.t0) / 1000;
       const total = ep.exploreDur + ep.pathDur + ep.hold;
-      let alpha = 1;
-      if (t > total) alpha = clamp(1 - (t - total) / ep.fade, 0, 1);
+      let alpha = finePointer ? 1 : 0.55;
+      if (t > total) alpha *= clamp(1 - (t - total) / ep.fade, 0, 1);
       ctx.globalAlpha = alpha;
 
       // explored cells
@@ -451,7 +457,7 @@
 
     // pointer follow
     host.addEventListener('mousemove', (e) => {
-      if (!finePointer) return;
+      if (!finePointer || reduced) return;
       const r = canvas.getBoundingClientRect();
       S.mouse = { x: e.clientX - r.left, y: e.clientY - r.top };
       const now = performance.now();
@@ -465,38 +471,49 @@
       clearTimeout(S.idleTimer);
       S.idleTimer = setTimeout(() => { S.mouse = null; newEpisode(); }, 5000);
       const hint = $('.hero__hint');
-      if (hint && !hint.dataset.done) { hint.dataset.done = '1'; hint.style.transition = 'opacity 1s ease 2s'; hint.style.opacity = '0'; }
+      if (hint && !hint.dataset.done && heroIntroStarted) { hint.dataset.done = '1'; if (hasGsap) gsap.to(hint, { autoAlpha: 0, delay: 2, duration: 1, overwrite: true }); else hint.style.opacity = '0'; }
     }, { passive: true });
     host.addEventListener('mouseleave', () => {
       clearTimeout(S.idleTimer);
       S.idleTimer = setTimeout(() => { S.mouse = null; if (ep && ep.follow) newEpisode(); }, 1200);
     });
 
+    let lastW = 0, rt;
+    const onResize = () => {
+      // phones fire resize when the address bar hides; only a width change needs a rebuild
+      if (window.innerWidth === lastW && Math.abs(host.offsetHeight - S.H) < 120) return;
+      resize();
+      if (reduced) drawStill();
+    };
+    const drawStill = () => {
+      S.gate = true;
+      ep.t0 = performance.now() - (ep.exploreDur + ep.pathDur) * 1000 - 10;
+      S.active = true; frame(performance.now()); S.active = false;
+    };
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(onResize, 150); });
+    resize(); lastW = window.innerWidth;
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(buildBackground);
+
+    if (reduced) {
+      // draw one finished route and stop; no observers, nothing to restart
+      drawStill();
+      return { readColors: () => { readColors(); drawStill(); }, resume() {} };
+    }
+
     // pause when out of view / hidden
+    let visible = true;
     const io = new IntersectionObserver(([en]) => {
+      visible = en.isIntersecting;
       const wasActive = S.active;
-      S.active = en.isIntersecting && !document.hidden;
+      S.active = visible && !document.hidden;
       if (S.active && !wasActive) requestAnimationFrame(frame);
     }, { threshold: 0.05 });
     io.observe(host);
     document.addEventListener('visibilitychange', () => {
       const wasActive = S.active;
-      S.active = !document.hidden;
+      S.active = visible && !document.hidden;
       if (S.active && !wasActive) requestAnimationFrame(frame);
     });
-
-    let rt;
-    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(resize, 150); });
-    resize();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(buildBackground);
-
-    if (reduced) {
-      // draw one finished route and stop
-      S.gate = true;
-      ep.t0 = performance.now() - (ep.exploreDur + ep.pathDur) * 1000 - 10;
-      S.active = true; frame(performance.now()); S.active = false;
-      return { readColors: () => { readColors(); S.active = true; ep.t0 = performance.now() - (ep.exploreDur + ep.pathDur) * 1000 - 10; frame(performance.now()); S.active = false; }, resume() {} };
-    }
     // stay idle while the welcome overlay covers the hero; the hero intro opens the gate
     S.gate = heroIntroStarted;
     if (S.gate) requestAnimationFrame(frame);
@@ -545,7 +562,7 @@
     const p = clamp(y / dh, 0, 1);
     if (window.innerWidth < 1024) hud.style.setProperty('--progress', p.toFixed(4));
     const rp = railPosition(p);
-    railFill.style.height = `${rp * 100}%`;
+    railFill.style.transform = `scaleY(${rp.toFixed(4)})`;
     railYou.style.top = `${rp * 100}%`;
     let active = 0;
     stopFracs.forEach((f, i) => { if (p + 0.015 >= f) active = i; });
@@ -553,6 +570,7 @@
     stops.forEach((a, i) => {
       a.classList.toggle('is-active', i === active);
       a.classList.toggle('is-passed', i < active);
+      if (i === active) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
     });
     const label = stops[active].querySelector('span').textContent;
     if (hudSection.textContent !== label) hudSection.textContent = label;
@@ -601,8 +619,10 @@
   /* ---------- Stacked project cards ---------- */
   const cards = $$('.card');
   cards.forEach((card, i) => {
+    if (!hasGsap || reduced) return; // reduced motion: cards flow normally (CSS resets position)
     card.style.top = `calc(var(--hud-h) + 1.25rem + ${i * 10}px)`;
-    if (!hasGsap || reduced) return;
+    // a covered card's link can still take focus: bring its card back into view
+    card.addEventListener('focusin', () => { if (lenis) lenis.scrollTo(card, { offset: -hudH() - 20, duration: 0.6 }); else card.scrollIntoView({ block: 'start' }); });
     if (i < cards.length - 1) {
       // a real element with an opacity tween stays on the compositor; a custom property would repaint the card
       const dim = document.createElement('span');
@@ -802,9 +822,10 @@
   const hudSig = $('#hudSig');
   loadInkflowSvg(hudSig).then(() => { if (!root.classList.contains('welcome-pending')) hudSig.classList.add('is-on'); }).catch(() => { hudSig.textContent = 'Muhammad Ahsan'; hudSig.classList.add('is-on'); });
 
-  // the sign-off writes itself as you arrive: the main mark first, the alias in the last stretch
+  // the sign-off writes itself as you arrive: the main mark first, the alias in the last stretch.
+  // Its two exports are only fetched once the reader is within a couple of screens of it.
   const seal = $('#seal'), aliasEl = $('#alias');
-  Promise.all([loadInkflowSvg(seal).catch(() => null), loadInkflowSvg(aliasEl).catch(() => null)]).then(([sealSvg, aliasSvg]) => {
+  const loadSignoff = () => Promise.all([loadInkflowSvg(seal).catch(() => null), loadInkflowSvg(aliasEl).catch(() => null)]).then(([sealSvg, aliasSvg]) => {
     const a1 = sealSvg && sealSvg.inkflow, a2 = aliasSvg && aliasSvg.inkflow;
     if (!a1 && seal) seal.remove();
     if (!a2 && aliasEl) aliasEl.remove();
@@ -820,11 +841,16 @@
         const p = st.progress;
         const v1 = Math.round(clamp(p / 0.72, 0, 1) * 240) / 240;
         const v2 = Math.round(clamp((p - 0.62) / 0.38, 0, 1) * 240) / 240;
-        if (a1 && v1 !== q1) { q1 = v1; a1.seek(v1 * a1.getDuration()); }
-        if (a2 && v2 !== q2) { q2 = v2; a2.seek(v2 * a2.getDuration()); }
+        if (a1 && v1 !== q1) { q1 = v1; a1.seek(v1 * a1.getDuration()); seal.classList.toggle('is-set', v1 >= 1); }
+        if (a2 && v2 !== q2) { q2 = v2; a2.seek(v2 * a2.getDuration()); aliasEl.classList.toggle('is-set', v2 >= 1); }
       },
     });
   });
+  const signoffEl = $('#signoff');
+  if (signoffEl && 'IntersectionObserver' in window) {
+    const sio = new IntersectionObserver((entries) => { if (entries.some((e) => e.isIntersecting)) { sio.disconnect(); loadSignoff(); } }, { rootMargin: '1600px 0px' });
+    sio.observe(signoffEl);
+  } else loadSignoff();
 
   /* ---------- Media tiles: intro video, voice note, CV ---------- */
   const assetExists = async (url) => {
@@ -835,7 +861,7 @@
   if (videoTile) {
     let videoOk = false;
     assetExists(videoTile.dataset.src).then((ok) => { videoOk = ok; videoTile.classList.toggle('is-soon', !ok); });
-    const pageParts = () => $$('main, .hud, .rail, .footer');
+    const pageParts = () => $$('main, .hud, .rail, .footer, .skip');
     const openVideo = () => {
       if (!videoOk) { toast('Intro video is on its way'); return; }
       if (!introVideo.src) introVideo.src = videoTile.dataset.src;
@@ -850,17 +876,8 @@
     videoTile.addEventListener('click', (e) => { if (!e.target.closest('button')) openVideo(); });
     $('#lightboxClose').addEventListener('click', closeVideo);
     lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeVideo(); });
-    document.addEventListener('keydown', (e) => {
-      if (lightbox.hidden) return;
-      if (e.key === 'Escape') { closeVideo(); return; }
-      if (e.key === 'Tab') {
-        // keep focus inside the dialog
-        const focusables = [$('#lightboxClose'), introVideo];
-        const i = focusables.indexOf(document.activeElement);
-        const next = e.shiftKey ? (i <= 0 ? focusables.length - 1 : i - 1) : (i >= focusables.length - 1 ? 0 : i + 1);
-        e.preventDefault(); focusables[next].focus();
-      }
-    });
+    // the page behind is inert while the dialog is open, so Tab already stays within it (and inside the video's own controls)
+    document.addEventListener('keydown', (e) => { if (!lightbox.hidden && e.key === 'Escape') closeVideo(); });
   }
 
   const voiceTile = $('#voiceTile'), voicePlay = $('#voicePlay'), voiceAudio = $('#voiceAudio'), voiceWave = $('#voiceWave'), voiceTime = $('#voiceTime');
@@ -899,8 +916,8 @@
           if (!ctx && window.AudioContext) { ctx = new AudioContext(); const src = ctx.createMediaElementSource(voiceAudio); analyser = ctx.createAnalyser(); analyser.fftSize = 128; data = new Uint8Array(analyser.frequencyBinCount); src.connect(analyser); analyser.connect(ctx.destination); }
           if (ctx && ctx.state === 'suspended') await ctx.resume();
         } catch (e) { analyser = null; }
-        await voiceAudio.play().catch(() => toast('Could not play the voice note'));
-        voiceTile.classList.add('is-playing'); animate();
+        try { await voiceAudio.play(); } catch (e) { toast('Could not play the voice note'); return; }
+        voiceTile.classList.add('is-playing'); if (!reduced) animate();
         voicePlay.setAttribute('aria-label', 'Pause the voice note'); voicePlay.setAttribute('aria-pressed', 'true');
       } else { voiceAudio.pause(); }
     });

@@ -15,12 +15,17 @@
   const hasGsap = typeof gsap !== 'undefined';
   const pending = root.classList.contains('welcome-pending');
 
-  const pageParts = () => Array.from(document.querySelectorAll('main, .hud, .rail, .footer'));
+  const pageParts = () => Array.from(document.querySelectorAll('main, .hud, .rail, .footer, .skip'));
   const setInert = (on) => pageParts().forEach((el) => { el.inert = on; });
+  const auraCanvasEl = $('#aura');
+  const onKey = (e) => { if (e.key === 'Escape') skip(); };
   const bail = () => {
     root.classList.remove('welcome-pending');
     document.body.classList.remove('is-welcome');
     setInert(false);
+    document.removeEventListener('keydown', onKey);
+    if (auraCanvasEl) auraCanvasEl.classList.remove('is-front');
+    if (site.aura) site.aura.set({ focus: 0, light: 0.55, intensity: site.auraBase ? site.auraBase() : 0.5, center: [0.5, 0.5], colors: site.sectionPalette ? site.sectionPalette() : ['#F2B544', '#6FB9A8', '#6C7CE0'] });
     welcome.remove(); scrim.remove();
     if (site.hudSig) site.hudSig.classList.add('is-on');
     if (site.lenis) site.lenis.start();
@@ -52,7 +57,7 @@
   const particles = [];
   let dpr = 1;
   function resizeInk() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     ink.width = window.innerWidth * dpr; ink.height = window.innerHeight * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
@@ -152,7 +157,7 @@
       const rad = r.width * (0.18 + Math.random() * 0.34);
       spawn(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad * 0.42, -Math.cos(a), -Math.sin(a), 1, 6, 1.6);
     }
-    if (aura) aura.set({ center: sigCenterNorm(), intensity: 1.25, focus: 0.85 });
+    if (aura) aura.set({ center: sigCenterNorm(), intensity: 1.25 * boost, focus: 0.85 });
     gsap.to(caption, { opacity: 1, duration: 0.5 });
     gsap.from(caption.querySelectorAll('span'), { y: 8, opacity: 0, duration: 0.6, stagger: 0.04, ease: 'power3.out' });
     gsap.delayedCall(repeat ? 0.45 : 1.15, () => exit(false));
@@ -170,7 +175,7 @@
     const dx = b.left - s.left, dy = b.top + (b.height - s.height * scale) / 2 - s.top;
     const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
     scrim.style.clipPath = `circle(150% at ${cx}px ${cy}px)`;
-    if (aura) aura.set({ focus: 0, intensity: site.auraBase ? site.auraBase() : 0.55, center: [0.5, 0.5], colors: site.sectionPalette ? site.sectionPalette() : ['#F2B544', '#6FB9A8', '#6C7CE0'] });
+    if (aura) aura.set({ focus: 0, light: 0.55, intensity: site.auraBase ? site.auraBase() : 0.55, center: [0.5, 0.5], colors: site.sectionPalette ? site.sectionPalette() : ['#F2B544', '#6FB9A8', '#6C7CE0'] });
     const d = fast ? 0.7 : 1.35;
     const tl = gsap.timeline({
       onComplete: () => {
@@ -179,6 +184,8 @@
         welcome.remove(); scrim.remove();
         document.body.classList.remove('is-welcome');
         setInert(false);
+        document.removeEventListener('keydown', onKey);
+        window.removeEventListener('resize', resizeInk);
         if (auraCanvas) auraCanvas.classList.remove('is-front');
         if (brand) brand.classList.add('is-on');
         if (site.lenis) site.lenis.start();
@@ -205,12 +212,16 @@
     exit(true);
   }
   skipBtn.addEventListener('click', skip);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') skip(); });
+  document.addEventListener('keydown', onKey);
+  // the light theme gets a quieter halo: gold on cream stains instead of glowing
+  const lightTheme = (root.dataset.theme || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')) === 'light';
+  const boost = lightTheme ? 0.4 : 1;
 
   async function start() {
+    setInert(true);
     if (auraCanvas) auraCanvas.classList.add('is-front');
     // gold light with a cream core and teal at the edges: the aura should look lit, not smoky
-    if (aura) aura.set({ focus: 1, intensity: 0.15, light: 0, center: [0.5, 0.5], colors: ['#F2B544', '#F6DDA6', '#6FB9A8'] });
+    if (aura) aura.set({ focus: 1, intensity: 0.15 * boost, light: 0, center: [0.5, 0.5], colors: lightTheme ? ['#E2A93A', '#F3D08A', '#5FAA93'] : ['#F2B544', '#F6DDA6', '#6FB9A8'] });
     gsap.set(stage, { opacity: 0, scale: 0.97 });
     gsap.set([meta, skipBtn], { opacity: 0 });
     try {
@@ -223,10 +234,10 @@
     } catch (err) {
       bail(); return;
     }
+    if (exiting) return; // the visitor skipped before the signature arrived
     api.pause(); api.seek(0);
     api.setSpeed(repeat ? 2.4 : 1);
-    setInert(true);
-    if (aura) aura.set({ intensity: 0.9, center: sigCenterNorm() });
+    if (aura) aura.set({ intensity: 0.9 * boost, center: sigCenterNorm() });
     gsap.to(stage, { opacity: 1, scale: 1, duration: 1.1, ease: 'power3.out' });
     // focus the dialog itself (no ring); one Tab reaches Skip
     welcome.setAttribute('tabindex', '-1');

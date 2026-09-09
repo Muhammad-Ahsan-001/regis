@@ -39,7 +39,8 @@ const recolor = (doc) => (svg) => {
 };
 const copy = (from, to, fn) => { const s = fs.readFileSync(path.join(out, from), 'utf8'); fs.writeFileSync(path.join(assets, to), fn ? fn(s) : s, 'utf8'); };
 copy('signature.animated.svg', 'signature.animated.svg', recolor(design));
-copy('signature.static.svg', 'signature.static.svg', recolor(design));
+// the static header mark shares the page with the animated welcome copy, so its ids get their own prefix
+copy('signature.static.svg', 'signature.static.svg', (s) => recolor(design)(s).replace(/id="sig-/g, 'id="mark-').replace(/url\(#sig-/g, 'url(#mark-').replace(/href="#sig-/g, 'href="#mark-'));
 copy('signature.timing.json', 'signature.timing.json');
 copy('signature.inkflow.json', 'signature.inkflow.json');
 copy('seal.animated.svg', 'seal.animated.svg', recolor(design));
