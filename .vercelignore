@@ -2,3 +2,8 @@
 tools/
 .claude/
 NOTES.md
+
+# Editing sources and reference shots the page never loads.
+assets/*.inkflow.json
+assets/shot-*.png
+assets/Untitled-Project.*

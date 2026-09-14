@@ -14,6 +14,9 @@
 
   const hasGsap = typeof gsap !== 'undefined';
   const pending = root.classList.contains('welcome-pending');
+  // this file is running, so the head's stuck-overlay watchdog is no longer needed
+  window.__introReady = true;
+  if (window.__introWatchdog) { clearTimeout(window.__introWatchdog); window.__introWatchdog = null; }
 
   const pageParts = () => Array.from(document.querySelectorAll('main, .hud, .rail, .footer, .skip'));
   const setInert = (on) => pageParts().forEach((el) => { el.inert = on; });
