@@ -760,6 +760,34 @@
       return `<svg viewBox="0 0 600 420" preserveAspectRatio="xMidYMid slice">${out}
         <text class="mono" x="34" y="400">9 STAGES · SLA WATCH · 12 ROLES</text></svg>`;
     },
+    timetable() {
+      // a class timetable: periods down, days across, with one lecture picked out
+      const days = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+      const x0 = 96, y0 = 64, cw = 96, rh = 38, rows = 8;
+      let out = '';
+      days.forEach((d, i) => { out += `<text class="mono" x="${x0 + i * cw + 8}" y="${y0 - 14}">${d}</text>`; });
+      for (let r = 0; r < rows; r++) {
+        const y = y0 + r * rh;
+        out += `<text class="mono" x="40" y="${y + 24}">L${r + 1}</text>`;
+        out += `<line class="soft" x1="${x0}" y1="${y}" x2="${x0 + days.length * cw}" y2="${y}"/>`;
+        for (let c = 0; c < days.length; c++) {
+          // a deterministic but irregular scatter, so it reads as a real timetable
+          const filled = (r * 7 + c * 5 + ((r * c) % 3)) % 4 !== 0;
+          if (!filled) continue;
+          const hot = r === 3 && c === 2;
+          const x = x0 + c * cw;
+          out += `<rect class="${hot ? 'acc' : 'hair'}" x="${x + 4}" y="${y + 5}" width="${cw - 10}" height="${rh - 11}" rx="5" fill="${hot ? 'var(--accent)' : 'var(--bg-3)'}" fill-opacity="${hot ? 0.22 : 0.85}" stroke-width="${hot ? 1.5 : 0.8}"/>`;
+          out += `<rect class="${hot ? 'acc-f' : 'ink-f'}" x="${x + 12}" y="${y + 13}" width="${26 + ((r * 13 + c * 9) % 30)}" height="5" rx="2" opacity="${hot ? 1 : 0.4}"/>`;
+        }
+      }
+      out += `<line class="soft" x1="${x0}" y1="${y0 + rows * rh}" x2="${x0 + days.length * cw}" y2="${y0 + rows * rh}"/>`;
+      for (let c = 0; c <= days.length; c++) {
+        out += `<line class="soft" x1="${x0 + c * cw}" y1="${y0}" x2="${x0 + c * cw}" y2="${y0 + rows * rh}"/>`;
+      }
+      out += `<circle class="acc-f pulse-node" cx="${x0 + 2 * cw + cw / 2}" cy="${y0 + 3 * rh + rh / 2}" r="3.5"/>`;
+      return `<svg viewBox="0 0 600 420" preserveAspectRatio="xMidYMid slice">${out}
+        <text class="mono" x="40" y="400">7 PORTALS · 113 PERMISSIONS</text></svg>`;
+    },
   };
   cards.forEach((card) => {
     const kind = card.dataset.art;

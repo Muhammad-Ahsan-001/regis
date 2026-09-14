@@ -85,9 +85,33 @@ Made with your InkFlow Studio code, not by hand.
 
 ## Placeholders still to fill
 
-- Six project cards in `index.html` (Atlas, Ledger, Frame, Campus, Studio, Signal). Card art is generated from the `data-art` attribute in `main.js`. Their "View project" links point to `#` until real URLs exist.
 - LinkedIn button in the contact section points to `#`.
 - Stats in the About section.
+
+## The project cards
+
+Seven real projects, written from what the code actually does rather than from the READMEs. Order and art are set by `data-art` in `index.html`, with the generators in `main.js`.
+
+| # | Project | Art | Link |
+|---|---|---|---|
+| 1 | FileDesk | ledger | filedesk.avezea.com |
+| 2 | CS Indoor Navigator | route | live on Vercel |
+| 3 | The Aluminium Pro | frame | none, in development |
+| 4 | IEEE CS Student Resource Hub | nodes | ieeecscui.vercel.app |
+| 5 | INTELLA | timetable | none, in development |
+| 6 | Top7 Consultants CRM | kanban | none, local demo |
+| 7 | InkFlow Studio | timeline | live, and it drew the signature |
+
+Every repo for these is private, so no card links to source. Cards without a public URL show a status label instead of a link.
+
+Claims a fact-check pass corrected, so they do not creep back in:
+
+- FileDesk has **four** calculators plus a fee estimator, not five.
+- The IEEE hub's "500+ past papers" and "500+ active members" are template copy in the hero; the database holds far less. The card avoids both numbers.
+- The navigator's building is a hand-drawn plan with real room names, not a survey. Do not call it survey-accurate, and do not say it knows where you are; the user picks the start.
+- The Aluminium Pro and INTELLA are not deployed, and no school is using INTELLA yet.
+- Top7 is a local demo on seeded data, with no hosted URL.
+
 
 ## Which signature is which
 

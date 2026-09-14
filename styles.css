@@ -480,7 +480,14 @@ main { position: relative; z-index: 1; }
 .card__desc { max-width: 42ch; }
 .card__stack { display: flex; flex-wrap: wrap; gap: 0.5rem; padding-top: 0.5rem; }
 .card__stack li { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.35rem 0.65rem; border-radius: 6px; background: var(--bg-3); color: var(--ink-2); }
-.card__link { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-display); font-weight: 600; color: var(--accent); margin-top: 0.25rem; }
+.card__link { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-display); font-weight: 600; color: var(--accent); margin-top: 0.25rem; width: fit-content; }
+/* cards with nothing public to open say where the work stands instead */
+.card__status {
+  display: inline-flex; align-items: center; gap: 0.5rem; width: fit-content; margin-top: 0.25rem;
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted); max-width: none;
+}
+.card__status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex: none; }
 .card__link .icon { transition: transform 0.4s var(--ease); }
 .card__link:hover .icon { transform: translate(3px, -3px); }
 .card__art {
