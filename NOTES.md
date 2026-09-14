@@ -41,15 +41,18 @@ If you change the domain, update the absolute URLs in the `index.html` head, `ro
 
 ## Analytics
 
-Vercel Web Analytics is on, via one script tag at the bottom of `index.html`. It is cookieless and stores no personal data, so the site needs no consent banner. Numbers appear at the project's Analytics tab once real visitors arrive; your own visits count too, so use a private window when testing.
+Two script tags at the bottom of `index.html` carry Web Analytics (visits) and Speed Insights (real-world load times). Both are cookieless and store no personal data, so the site needs no consent banner.
 
-That script 404s on the local server because `/_vercel/insights/script.js` only exists on Vercel. That is expected and harmless.
+Both 404 on the local server because `/_vercel/...` only exists on Vercel. That is expected and harmless.
 
-Speed Insights (real-world load times) is provisioned but not switched on. To add it, put this next to the analytics tag and push:
+Your own visits are counted, so use a private window when testing.
 
-```html
-<script defer src="/_vercel/speed-insights/script.js"></script>
-```
+Turning one of these on takes two steps, and missing the second one looks exactly like a broken setup:
+
+1. Flip the toggle in the dashboard. There is no CLI command or API for it. Analytics tab, then Speed Insights tab.
+2. **Redeploy.** The `/_vercel/...` route is baked into a build, so a deployment made before the toggle will keep returning 404 forever. Run `vercel redeploy <production-url>` or push any commit.
+
+One more trap when testing: Vercel ignores bot traffic, so a headless browser loads the script but never sends a beacon. Check in a real browser, or the numbers will look broken when they are fine.
 
 ## Branches
 
