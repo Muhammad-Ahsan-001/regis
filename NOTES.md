@@ -41,9 +41,15 @@ If you change the domain, update the absolute URLs in the `index.html` head, `ro
 
 ## Analytics
 
-Two script tags at the bottom of `index.html` carry Web Analytics (visits) and Speed Insights (real-world load times). Both are cookieless and store no personal data, so the site needs no consent banner.
+Vercel Web Analytics is on, via one script tag at the bottom of `index.html`. It is cookieless and stores no personal data, so the site needs no consent banner.
 
-Both 404 on the local server because `/_vercel/...` only exists on Vercel. That is expected and harmless.
+That script 404s on the local server because `/_vercel/...` only exists on Vercel. That is expected and harmless.
+
+**Speed Insights is not installed.** It needs a Pro plan, so on Hobby the script would 404 on every visit for nothing. If you upgrade, add this next to the analytics tag, enable it on the dashboard, then redeploy:
+
+```html
+<script defer src="/_vercel/speed-insights/script.js"></script>
+```
 
 Your own visits are counted, so use a private window when testing.
 
