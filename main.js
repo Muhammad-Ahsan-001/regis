@@ -585,8 +585,10 @@
   // one scroll source: Lenis when it drives the page, the window otherwise
   if (lenis) lenis.on('scroll', onScroll); else window.addEventListener('scroll', onScroll, { passive: true });
   hud.addEventListener('focusin', () => { hud.style.transform = ''; });
-  window.addEventListener('resize', () => { layoutRail(); onScroll(); });
-  window.addEventListener('load', () => { layoutRail(); onScroll(); if (hasGsap) ScrollTrigger.refresh(); });
+  window.addEventListener('resize', () => { layoutCards(); layoutRail(); onScroll(); });
+  window.addEventListener('load', () => { layoutCards(); layoutRail(); onScroll(); if (hasGsap) ScrollTrigger.refresh(); });
+  // card heights settle once the display face is in, so measure again then
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { layoutCards(); if (hasGsap) ScrollTrigger.refresh(); });
   if ('ResizeObserver' in window) new ResizeObserver(() => { layoutRail(); onScroll(); }).observe(document.body);
   layoutRail(); onScroll();
 
@@ -618,9 +620,26 @@
 
   /* ---------- Stacked project cards ---------- */
   const cards = $$('.card');
+  // each card rests in the middle of the screen, not tucked under the header;
+  // a small per-card offset keeps the stacked-deck edge visible behind it
+  const cardTops = [];
+  function layoutCards() {
+    if (!hasGsap || reduced) return;
+    const vh = window.innerHeight;
+    cards.forEach((card, i) => {
+      const h = card.offsetHeight;
+      const centred = Math.round((vh - h) / 2);
+      // clear the header when the card leaves room for it; otherwise fitting on screen wins,
+      // since the header is translucent and gets out of the way on the scroll down anyway
+      const floor = h + hudH() + 32 <= vh ? hudH() + 16 : 8;
+      // the per-card offset shows the deck edge, but never at the cost of the card fitting on screen
+      cardTops[i] = Math.min(Math.max(floor, centred) + i * 8, Math.max(floor, vh - h - 8));
+      card.style.top = `${cardTops[i]}px`;
+    });
+  }
+  layoutCards();
   cards.forEach((card, i) => {
     if (!hasGsap || reduced) return; // reduced motion: cards flow normally (CSS resets position)
-    card.style.top = `calc(var(--hud-h) + 1.25rem + ${i * 10}px)`;
     // a covered card's link can still take focus: bring its card back into view
     card.addEventListener('focusin', () => { if (lenis) lenis.scrollTo(card, { offset: -hudH() - 20, duration: 0.6 }); else card.scrollIntoView({ block: 'start' }); });
     if (i < cards.length - 1) {
@@ -628,7 +647,7 @@
       const dim = document.createElement('span');
       dim.className = 'card__dim'; dim.setAttribute('aria-hidden', 'true');
       card.appendChild(dim);
-      gsap.timeline({ scrollTrigger: { trigger: cards[i + 1], start: 'top bottom', end: `top top+=${hudH() + 30}`, scrub: true } })
+      gsap.timeline({ scrollTrigger: { trigger: cards[i + 1], start: 'top bottom', end: () => `top top+=${cardTops[i + 1] || hudH() + 30}`, scrub: true } })
         .to(card, { scale: 0.94, ease: 'none' }, 0)
         .to(dim, { opacity: 0.6, ease: 'none' }, 0);
     }

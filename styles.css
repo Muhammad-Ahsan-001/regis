@@ -454,7 +454,10 @@ main { position: relative; z-index: 1; }
 .stats span { color: var(--muted); text-transform: none; letter-spacing: 0.02em; font-family: var(--font-body); font-size: 0.9rem; }
 
 /* ---------- Work: stacked cards ---------- */
-.stack { display: grid; gap: 4vh; }
+/* the gap is the beat: how long a card sits alone on screen before the next one rises over it */
+.stack { display: grid; gap: 20vh; }
+/* on phones a card nearly fills the screen already, so it needs less of a pause */
+@media (max-width: 899px) { .stack { gap: 10vh; } }
 .card {
   position: sticky; top: calc(var(--hud-h) + 1.25rem);
   display: grid; gap: 1.5rem;

@@ -94,7 +94,7 @@ Seven real projects, written from what the code actually does rather than from t
 
 | # | Project | Art | Link |
 |---|---|---|---|
-| 1 | FileDesk | ledger | filedesk.avezea.com |
+| 1 | FileDesk | ledger | filedeskweb.avezea.com |
 | 2 | CS Indoor Navigator | route | live on Vercel |
 | 3 | The Aluminium Pro | frame | none, in development |
 | 4 | IEEE CS Student Resource Hub | nodes | ieeecscui.vercel.app |
