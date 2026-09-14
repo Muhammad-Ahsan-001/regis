@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://regis-ahsan.vercel.app/sitemap.xml
+Sitemap: https://ahsani.vercel.app/sitemap.xml
