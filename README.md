@@ -2,7 +2,7 @@
 
 The personal site of Muhammad Ahsan, full-stack developer and computer science student in Islamabad.
 
-Live at **[regis.vercel.app](https://regis.vercel.app)**.
+Live at **[regis-ahsan.vercel.app](https://regis-ahsan.vercel.app)**.
 
 A single page with no build step: plain HTML, CSS and JavaScript, with GSAP, ScrollTrigger and Lenis loaded from a CDN.
 
