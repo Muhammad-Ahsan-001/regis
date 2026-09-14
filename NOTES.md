@@ -10,6 +10,47 @@ python -m http.server 8765 --bind 127.0.0.1
 
 Then open http://127.0.0.1:8765. The Browser pane config in `.claude/launch.json` does the same thing. (Port 5500 is reserved on this machine.)
 
+## Deployment
+
+Live at **https://ahsani.vercel.app**. Pushing to `main` deploys it. Nothing else to run.
+
+```bash
+git push
+```
+
+Pushing any other branch builds a preview at its own URL instead, so `aura` is safe to experiment on.
+
+| | |
+|---|---|
+| Repo | github.com/Muhammad-Ahsan-001/regis |
+| Vercel project | `regis` |
+| Production branch | `main` |
+| Aliases | regis-ahsan, iamregis, regisahsan, regis-five (all `.vercel.app`) |
+
+`regis.vercel.app` itself belongs to someone else's Vercel account, which is why the site sits on `ahsani`.
+
+To deploy without a push, from this folder:
+
+```bash
+vercel deploy --prod
+```
+
+`vercel.json` sets the cache and security headers. `.vercelignore` keeps `tools/`, `.claude/`, `NOTES.md` and the InkFlow editing sources in the repo but off the public site. Never commit `.env.local`; it holds a token and is already ignored.
+
+If you change the domain, update the absolute URLs in the `index.html` head, `robots.txt`, `sitemap.xml` and `README.md`, then push.
+
+## Analytics
+
+Vercel Web Analytics is on, via one script tag at the bottom of `index.html`. It is cookieless and stores no personal data, so the site needs no consent banner. Numbers appear at the project's Analytics tab once real visitors arrive; your own visits count too, so use a private window when testing.
+
+That script 404s on the local server because `/_vercel/insights/script.js` only exists on Vercel. That is expected and harmless.
+
+Speed Insights (real-world load times) is provisioned but not switched on. To add it, put this next to the analytics tag and push:
+
+```html
+<script defer src="/_vercel/speed-insights/script.js"></script>
+```
+
 ## Branches
 
 - `main` holds the skeleton, tagged `skeleton-v1`.
